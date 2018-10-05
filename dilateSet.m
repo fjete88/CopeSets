@@ -5,7 +5,9 @@ function [dilation] = dilateSet( F )
 % F:         logical field over a domain in R^2
 %Output:
 % dilation are the voxel which are in the complement of F and its dilation
-
+%
+% Author: Dr. Fabian J.E. Telschow
+% Last Changes: Oct. 5 2018
 
 vert = F(1:end-1,:) | F(2:end,:);
 %%% Compute the right shifted horizontal edges

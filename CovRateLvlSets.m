@@ -12,6 +12,9 @@ function [coveringRate] = CovRateLvlSets( truef, hatf, thresh, c )
 % coveringRate is computed from all available hatf and computes the
 % frequency that the true c-levelset of truef is completly contained in the
 % thresholded hatfs.
+%
+% Author: Dr. Fabian J.E. Telschow
+% Last Changes: Oct. 5 2018
 
 sf    = size( truef );
 N     = ndims( truef );

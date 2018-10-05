@@ -1,7 +1,6 @@
 function [Y, delta, LKC] = generateProcess( NOISE_TYPE, N, nsim, D, L, params, b, SIGNAL_TYPE, SIGNAL_SHAPE )
 
-% Interpolate values of random field to boundary of an excursion set using
-% 4 -connectivity
+% Generates an error process
 % Input:
 % field:     random field over a domain in R^2, it is an (1+1)-dimensional array,
 %            where the last dimension enumerates realisations
@@ -9,6 +8,9 @@ function [Y, delta, LKC] = generateProcess( NOISE_TYPE, N, nsim, D, L, params, b
 %Output:
 % bdryValues is a vector containing the values of the random field on the
 % boundary estimated using linear interpolation of a 4-connectivity grid
+%
+% Author: Dr. Fabian J.E. Telschow
+% Last Changes: Oct. 5 2018
 
 %%%%% Generate noise fields
 

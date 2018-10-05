@@ -13,6 +13,9 @@ function [bdryValues] = erodedilateBdryEstim( field, c, delta )
 % estimated boundary from the mean. The values are interpolations using
 % a 4-connectivity grid and simple averages of the points inside and
 % outside the excursion set.
+%
+% Author: Dr. Fabian J.E. Telschow
+% Last Changes: Oct. 5 2018
 
 sf = size(field) ; 
 

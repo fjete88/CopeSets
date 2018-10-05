@@ -12,6 +12,9 @@ function [quantiles] = MultiplierBoots( R, alpha, Mboot, mask, center, normalize
 %Output:
 % quantile is the bootstrapped quantile of the maximum distribution of the 
 % input processes
+%
+% Author: Dr. Fabian J.E. Telschow
+% Last Changes: Oct. 5 2018
 
 % Check number of inputs.
 if nargin > 6
