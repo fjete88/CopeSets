@@ -1,14 +1,16 @@
-function [thresh, quantiles, SNR, asymptSD] = CopeSets_SNR( F, c, lvl, Mboot, bdry_type, delta )
+function [thresh, quantiles, SNR, asymptSD] = CopeSets_SNR( F, c, lvls, Mboot, bdry_type,...
+                                                             method, delta )
 
 % Computes all ingredients for CoPe sets of the signal-plus-noise-ratio.
 % Input:
 % F:    random field over a domain in R^D, it is an (D+1)-dimensional array,
 %       where the last dimension enumerates the samples
 % c:    threshold for excursions
-% lvl:       vector for which the quantile needs to be estimated
-% Mboot:     amount of bootstrap replicates (default=1e3)
+% lvls:       vector for which the quantile needs to be estimated
+% Mboot:     amount of bootstrap replicates (default=5e3)
 % bdry_type: currently 'linear', 'erodilation' or 'true' are supported
 % delta:     required, if bdry_type is equal to 'true'. This is the true
+% method:    option for the bootstrap estimator (default='t')
 %            population SNR function given on a D-dimensional array
 %Output:
 % thresh is the threshold lower and upper for the SNR in order to
@@ -27,7 +29,7 @@ function [thresh, quantiles, SNR, asymptSD] = CopeSets_SNR( F, c, lvl, Mboot, bd
 
 % Fill in unset optional values.
 switch nargin
-    case 7
+    case 6
         delta     = 666;
 end
 
@@ -48,7 +50,7 @@ switch(bdry_type)
 end
 
 %%%% Estimate the quantiles of the Gaussian process on the boundary
-quantiles = MultiplierBoots( F_bdry, lvl, Mboot, mask, 0, 0 );
+quantiles = MultiplierBoots( F_bdry, lvls, Mboot, mask, method );
 
 %%%% Compute upper and lower threshold for CoPE sets
 sF    = size(F);
@@ -56,8 +58,8 @@ N     = sF(end);
 index = repmat( {':'}, 1, length(sF) );
 sF    = sF(1:end-1);
 
-thresh = ones([ sF(1:end) length(lvl) 2]);
+thresh = ones([ sF(1:end) length(lvls) 2]);
 thresh(index{:},1) = c - repmat(shiftdim(quantiles, -length(sF)+1), [sF 1])...
-                     .*repmat(asymptSD,[1 1 length(lvl)]) / sqrt(N);
+                     .*repmat(asymptSD,[1 1 length(lvls)]) / sqrt(N);
 thresh(index{:},2) = c + repmat(shiftdim(quantiles, -length(sF)+1), [sF 1])...
-                     .*repmat(asymptSD,[1 1 length(lvl)]) / sqrt(N);
+                     .*repmat(asymptSD,[1 1 length(lvls)]) / sqrt(N);
