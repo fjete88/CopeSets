@@ -7,7 +7,7 @@ clear
 close all
 
 % Set working path
-cd '/home/drtea/Research/MatlabPackages/CopeSets'
+cd '/Users/maullz/Desktop/CopeSets'
 
 % Precompute fields y/n
 precomp = 1;
@@ -25,8 +25,8 @@ nlvls = length(lvls);
 pool_num = 1;
 
 % Error Field parameters
-stddev   = [4, 4];
-dim      = [50, 50];
+stddev   = [4, 4, 4];
+dim      = [100, 100, 100];
 noise    = 'normal'; % 't'; 'uniform'; %
 nu       = '';
 kernel   = 'gauss'; % 'quartic'; %
@@ -34,9 +34,10 @@ bin      = 0;
 D        = length(dim);
 
 % Signal parameters
-SIGNAL_TYPE  =  'SNR'; %'signal'; %
-SIGNAL_SHAPE = 'linear';
+SIGNAL_TYPE  = 'signal'; % 'SNR'; %
+SIGNAL_SHAPE = 'sphere';
 SIGNAL_SD    = ones(dim);
+param        = [5, 3, 3];
 
 % Target SNR or signal strength by CoPe sets
 c = 2;
@@ -50,7 +51,7 @@ index2 = repmat( {':'}, 1, D+2 );
 tic
 if precomp == 1
     [Y, delta] = generateProcess( n, nsim, stddev, dim, noise, nu,...
-                    kernel, bin, SIGNAL_SHAPE, SIGNAL_TYPE, SIGNAL_SD, pool_num );
+                    kernel, bin, SIGNAL_SHAPE, param, SIGNAL_TYPE, SIGNAL_SD, pool_num );
 end
 toc
 %

@@ -209,8 +209,8 @@ end
 % alpha = 1/(4*FWHM(1)^2);
 
 % close connection to GPUs
-if( pool_num > 1 )
-    if( state_gcp == 42 )   
+if( pool_num > 1 ) 
+    if ( state_gcp == 42 )
         delete(gcp)
     end
 end
