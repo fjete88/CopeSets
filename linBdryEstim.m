@@ -19,8 +19,12 @@ function [bdryValues] = linBdryEstim( field, c, weights, delta )
 % are interpolations using a 4-connectivity grid and simple averages of the points inside and
 % outside the excursion set.
 %
-% Author: Dr. Fabian J.E. Telschow
-% Last Changes: Oct. 5 2018
+%__________________________________________________________________________
+% References:
+%__________________________________________________________________________
+% Author: Fabian Telschow (ftelschow@ucsd.edu)
+% Last changes: 10/22/2018
+%__________________________________________________________________________
 
 sf = size(field) ; 
 

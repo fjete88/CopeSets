@@ -15,9 +15,9 @@ NOISE_TYPE = 'isotropic';
 L0 = 1;     % EC of domain
 D = 2;      % Dimension of domain (including scale)
 L = 50;    % size of domain
-N = 200;     % replicates (sample size)
-nsim = 500;  % number of simulations
-nu = 5;     % parameter for isotropic
+N = 100;     % replicates (sample size)
+nsim = 1000;  % number of simulations
+nu = 4;     % parameter for isotropic
 gamma = 4:.2:40;  % bandwiths for scale-space
 b = 5;      % size of filter domain in std
 lvls = [0.85 0.90 0.95];
@@ -38,15 +38,18 @@ switch(NOISE_TYPE),
 end
 
 % Noise
-tic
-[Y, delta, LKC] = generateProcess(NOISE_TYPE, N, nsim, D, L, params, b, SIGNAL_TYPE, SIGNAL_SHAPE);
-toc
+%tic
+%[Y, delta, LKC] = generateProcess(NOISE_TYPE, N, nsim, D, L, params, b, SIGNAL_TYPE, SIGNAL_SHAPE);
+%toc
+
+[Y, delta] = generateProcess( n, nsim, stddev, dim, noise, nu,...
+                    kernel, bin, SIGNAL_SHAPE, SIGNAL_TYPE, SIGNAL_SD, pool_num );
 %%
 %%%%% Save error processes for later use to accelarate simulations (files might get large (N=200, nsim=1000 => 4gB!))
 %save('N50Nsim1000LN50_isotropic_nu5.mat', '-v7.3')
 %% Compute Signal and Observations if precomputed error process is used
 %load('N20Nsim1000L50_isotropic_nu5.mat')
-load 'N200Nsim1000L50_isotropic_nu5.mat';
+%load 'N200Nsim1000L50_isotropic_nu5.mat';
 
 t = (0.5:L)/L;
 [xx, yy] = meshgrid(t, t);
@@ -66,7 +69,7 @@ end
 clear xx yy t
 Y=y;
 %% % estimate empirical variance and mean of the fields
-switch(SIGNAL_TYPE),
+switch(SIGNAL_TYPE)
     case 'signal'
         deltahat = permute(mean(Y,3), [1 2 4 3]);
         deltahat2 = permute(mean(Y.^2,3), [1 2 4 3]);

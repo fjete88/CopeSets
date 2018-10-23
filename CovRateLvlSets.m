@@ -13,8 +13,12 @@ function [coveringRate] = CovRateLvlSets( truef, hatf, thresh, c )
 % frequency that the true c-levelset of truef is completly contained in the
 % thresholded hatfs.
 %
-% Author: Dr. Fabian J.E. Telschow
-% Last Changes: Oct. 5 2018
+%__________________________________________________________________________
+% References:
+%__________________________________________________________________________
+% Author: Fabian Telschow (ftelschow@ucsd.edu)
+% Last changes: 10/05/2018
+%__________________________________________________________________________
 
 sf    = size( truef );
 N     = ndims( truef );
