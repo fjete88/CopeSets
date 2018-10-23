@@ -43,9 +43,9 @@ param        = [5, 3, 3];
 c = 2;
 
 % index for variable access on fields with different dimensions
-index  = repmat( {':'}, 1, length(dim) );
-index1 = repmat( {':'}, 1, length(dim)+1 );
-index2 = repmat( {':'}, 1, length(dim)+2 );
+index  = repmat( {':'}, 1, D );
+index1 = repmat( {':'}, 1, D+1 );
+index2 = repmat( {':'}, 1, D+2 );
 
 %% Generate fields, if not precomputed
 tic
@@ -78,11 +78,11 @@ switch(SIGNAL_TYPE)
         for k = 1:nsim
             % Obtain quantile estimate    
             [thresh_truebdry(index1{:},k,:), a_truebdry(:,k), ~, ~]...
-                    = CopeSets( Y(index1{:},k), c, lvls, 5e3, 'true', 1, 1, delta );
+                    = CopeSets( Y(index1{:},k), c, lvls, 5e3, 'true', 1, 1, 't', delta );
             [thresh_estimbdry(index1{:},k,:), a_estimbdry(:,k), ~, ~]...
-                    = CopeSets( Y(index1{:},k), c, lvls, 5e3, 'linear', 1, 1 );
+                    = CopeSets( Y(index1{:},k), c, lvls, 5e3, 'linear', 1, 1, 't' );
             [thresh_estimbdry2(index1{:},k,:), a_estimbdry2(:,k), hatdelta(index{:},k), hatsigma(index{:},k)]...
-                    = CopeSets( Y(index1{:},k), c, lvls, 5e3, 'erodilation', 1, 1 );
+                    = CopeSets( Y(index1{:},k), c, lvls, 5e3, 'erodilation', 1, 1, 't' );
         end
         toc
     case 'SNR'
@@ -90,11 +90,11 @@ switch(SIGNAL_TYPE)
         for k = 1:nsim
             % Obtain quantile estimate    
             [thresh_truebdry(index1{:},k,:), a_truebdry(:,k), ~, ~]...
-                    = CopeSets_SNR( Y(index1{:},k), c, lvls, 5e3, 'true', delta );
+                    = CopeSets_SNR( Y(index1{:},k), c, lvls, 5e3, 'true', 't', delta );
             [thresh_estimbdry(index1{:},k,:), a_estimbdry(:,k), ~, ~]...
-                    = CopeSets_SNR( Y(index1{:},k), c, lvls, 5e3, 'linear' );
+                    = CopeSets_SNR( Y(index1{:},k), c, lvls, 5e3, 'linear', 't' );
             [thresh_estimbdry2(index1{:},k,:), a_estimbdry2(:,k), hatdelta(index{:},k), hatsigma(index{:},k)]...
-                    = CopeSets_SNR( Y(index1{:},k), c, lvls, 5e3, 'erodilation' );
+                    = CopeSets_SNR( Y(index1{:},k), c, lvls, 5e3, 'erodilation', 't' );
 
         end
         toc
