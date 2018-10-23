@@ -10,12 +10,19 @@ function [residuals, SNR, asymptSD] = SNR_residuals( F )
 % hatdelta is the sample mean of the fields
 % hatsigma is the sample variance of the fields
 %
-% Author: Dr. Fabian J.E. Telschow
-% Last Changes: Oct. 5 2018
+%__________________________________________________________________________
+% References:
+%__________________________________________________________________________
+% Author: Fabian Telschow (ftelschow@ucsd.edu)
+% Last changes: 10/23/2018
+%__________________________________________________________________________
+
+%%%% Compute dimension of the domain
+D = length(size(F))-1;
 
 %%%% Compute mean curve and variance
-hatdelta = mean( F, 3 ); 
-hatsigma = std( F, 0, 3 );
+hatdelta = mean( F, D+1 ); 
+hatsigma = std( F, 0, D+1 );
 
 %%%% Compute the estimated SNR
 SNR      = hatdelta ./ hatsigma;

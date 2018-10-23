@@ -6,8 +6,12 @@ function [dilation] = dilateSet( F )
 %Output:
 % dilation are the voxel which are in the complement of F and its dilation
 %
-% Author: Dr. Fabian J.E. Telschow
-% Last Changes: Oct. 5 2018
+%__________________________________________________________________________
+% References:
+%__________________________________________________________________________
+% Author: Fabian Telschow (ftelschow@ucsd.edu)
+% Last changes: 10/05/2018
+%__________________________________________________________________________
 
 vert = F(1:end-1,:) | F(2:end,:);
 %%% Compute the right shifted horizontal edges

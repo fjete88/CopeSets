@@ -1,11 +1,12 @@
-function [thresh, quantiles, hatdelta, hatsigma] = CopeSets( F, c, alpha, Mboot, bdry_type, center, normalize, delta )
+function [thresh, quantiles, hatdelta, hatsigma] = CopeSets( F, c, lvl, Mboot, bdry_type,...
+                                                             center, normalize, method, delta )
 
 % Computes CoPe all ingredients for CoPe sets.
 % Input:
 % F:    random field over a domain in R^D, it is an (D+1)-dimensional array,
 %       where the last dimension enumerates the samples
 % c:    threshold for excursions
-% alpha:     vector for which the quantile needs to be estimated
+% lvl:       vector for which the quantile needs to be estimated
 % Mboot:     amount of bootstrap replicates (default=1e3)
 % bdry_type: currently 'linear' or 'true' are supported
 % center:    option to center the field using the sample mean (default=1)
@@ -19,7 +20,12 @@ function [thresh, quantiles, hatdelta, hatsigma] = CopeSets( F, c, alpha, Mboot,
 % input processes
 % hatdelta is the sample mean of the fields
 % hatsigma is the sample variance of the fields
-
+%__________________________________________________________________________
+% References:
+%__________________________________________________________________________
+% Author: Fabian Telschow (ftelschow@ucsd.edu)
+% Last changes: 10/05/2018
+%__________________________________________________________________________
 
 % Fill in unset optional values.
 switch nargin
@@ -27,25 +33,37 @@ switch nargin
         delta     = 666;
 end
 
+%%%% compute the dimension of the domain of the field
+D = length(size(F))-1;
+
 %%%% Compute mean curve and variance
-hatdelta = mean( F, 3 ); 
-hatsigma = std( F, 0, 3 );
+hatdelta = mean( F, D+1 ); 
+hatsigma = std( F, 0, D+1 );
 
 %%%% Compute the process on the boundary and its mask
-switch(bdry_type),
-    case 'linear',
+switch(bdry_type)
+    case 'linear'
         F_bdry = linBdryEstim( F, c );
         mask   = ones([size(F_bdry,1) 1] );
     case 'erodilation'
         F_bdry = erodedilateBdryEstim( F, c, delta );
         mask   = ones([size(F_bdry,1) 1] );
-    case 'true',
+    case 'true'
         F_bdry = linBdryEstim( F, c, delta );
         mask   = ones([size(F_bdry,1) 1] );
 end
 
+%%%% convert F_bdry to residuals if neccessary
+% Center/normalize, if required
+if center
+    F_bdry = F_bdry - repmat( mean(F_bdry,2), [1 N] );
+end
+if normalize
+   R = R ./ repmat( transpose(sqrt(var( transpose(R)))), [1 N] );
+end
+
 %%%% Estimate the quantiles of the Gaussian process on the boundary
-quantiles = MultiplierBoots( F_bdry, 1-alpha, Mboot, mask, center, normalize );
+quantiles = MultiplierBoots( F_bdry, lvl, Mboot, mask, method );
 
 %%%% Compute upper and lower threshold for CoPE sets
 sF = size(F);
@@ -53,8 +71,8 @@ N  = sF(end);
 index = repmat( {':'}, 1, length(sF) );
 sF = sF(1:end-1);
 
-thresh = ones([ sF(1:end) length(alpha) 2]);
+thresh = ones([ sF(1:end) length(lvl) 2]);
 thresh(index{:},1) = c - repmat(shiftdim(quantiles, -length(sF)+1), [sF 1])...
-                     .*repmat(hatsigma,[1 1 length(alpha)]) / sqrt(N);
+                     .*repmat(hatsigma,[1 1 length(lvl)]) / sqrt(N);
 thresh(index{:},2) = c + repmat(shiftdim(quantiles, -length(sF)+1), [sF 1])...
-                     .*repmat(hatsigma,[1 1 length(alpha)]) / sqrt(N);
+                     .*repmat(hatsigma,[1 1 length(lvl)]) / sqrt(N);
