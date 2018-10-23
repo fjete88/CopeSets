@@ -197,6 +197,7 @@ end
 
 if strcmp(kernel, 'gauss')
     % standard deviation of the smoothed field
+    FWHM = FWHM / (2*sqrt(2*log(2)));
     sigma = ( 2^2 * prod(FWHM) * pi^(2/2) )^(-1/2);
 
     % normalize fields to standard deviation 1
