@@ -59,13 +59,14 @@ switch nargin
         pool_num = 1;
 end
 
-% save the state of the GPU's are open already
-state_gcp = isempty(gcp('nocreate'));
-
 % open connection to GPUs, if not already established
-if( state_gcp && pool_num > 1 )
-    parpool( pool_num );
-    state_gcp = 42;
+if( pool_num > 1 )
+    % save the state of the GPU's are open already
+    state_gcp = isempty(gcp('nocreate'));
+    if( stage_gcp )
+        parpool( pool_num );
+        state_gcp = 42;
+    end
 end
 
 % pre-allocate for parallel computing
@@ -212,6 +213,8 @@ end
 % alpha = 1/(4*stddev(1)^2);
 
 % close connection to GPUs
-if( state_gcp == 42 && pool_num > 1 )   
-    delete(gcp)
+if( pool_num > 1 ) 
+    if ( state_gcp == 42 )
+        delete(gcp)
+    end
 end
