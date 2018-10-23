@@ -1,4 +1,4 @@
-function f = SmoothField3D( n, nsim, stddev, dim, noise, nu,...
+function f = SmoothField3D( n, nsim, FWHM, dim, noise, nu,...
                             kernel, bin, pool_num )
 %__________________________________________________________________________
 % Generates stationary, isotropic or nonstationary Gaussian and non-Gaussian
@@ -11,7 +11,7 @@ function f = SmoothField3D( n, nsim, stddev, dim, noise, nu,...
 % Input:
 %   n        -  Sample size
 %   nsim     -  Number of simulations
-%   stddev   -  3-D vector containing the std in the different dimensions for
+%   FWHM     -  3-D vector containing the FWHM in the different dimensions for
 %               smoothing
 %   dim      -  dimensions of the field
 %   noise    -  options are 'normal', 't', 'uniform' (default: 'normal')
@@ -59,13 +59,14 @@ switch nargin
         pool_num = 1;
 end
 
-% save the state of the GPU's are open already
-state_gcp = isempty(gcp('nocreate'));
-
-% open connection to GPUs, if not already established
-if( state_gcp && pool_num > 1 ) 
-    parpool( pool_num );
-    state_gcp = 42;
+if( pool_num > 1 )
+    % save the state of the GPU's are open already
+    state_gcp = isempty(gcp('nocreate'));
+    % open connection to GPUs, if not already established
+    if( state_gcp ) 
+        parpool( pool_num );
+        state_gcp = 42;
+    end
 end
 
 % pre-allocate for parallel computing
@@ -75,10 +76,8 @@ d3    = dim(3);
 
 % obtain parameters for smoothing
 if strcmp(kernel, 'gauss')
-    % paramter for smoothing with spm_smooth, convert std into FHWM
-    smo  = stddev*2*sqrt(2*log(2));
     % numbers of zeros to be padded to each side (heuristic 4*std)
-    pad   = ceil(4*stddev);
+    pad   = ceil(4*FWHM/ (2*sqrt(2*log(2))));
     p1    = pad(1);
     p2    = pad(2);
     p3    = pad(3);
@@ -88,19 +87,19 @@ if strcmp(kernel, 'gauss')
     h = 0;
 elseif strcmp(kernel,'quartic')
     % pre-compute the filter for smoothing using quatric kernel
-    % stddev is half amount of voxels
-%     h1 = quartic_kernel( (-(stddev(1)-1):(stddev(1)-1) ) / stddev(1) );
-%     h2 = quartic_kernel( (-(stddev(2)-1):(stddev(2)-1) ) / stddev(2) );
-%     h3 = quartic_kernel( (-(stddev(3)-1):(stddev(3)-1) ) / stddev(3) );
+    % FWHM is half amount of voxels
+%     h1 = quartic_kernel( (-(FWHM(1)-1):(FWHM(1)-1) ) / FWHM(1) );
+%     h2 = quartic_kernel( (-(FWHM(2)-1):(FWHM(2)-1) ) / FWHM(2) );
+%     h3 = quartic_kernel( (-(FWHM(3)-1):(FWHM(3)-1) ) / FWHM(3) );
 % 
 %     tmp  = kron( h1, h2' );
 %     sT = size(tmp);
 %     h = repmat( tmp, [1 1 length(h3)]) .* ...
 %                 repmat(shiftdim(h3, -1), [sT(1) sT(2) 1]);
-    stddev = ceil(stddev);
-    [X, Y, Z] = meshgrid( (-(stddev(1)-1):(stddev(1)-1) ) / stddev(1), ...
-                          (-(stddev(2)-1):(stddev(2)-1) ) / stddev(2),...
-                          (-(stddev(3)-1):(stddev(3)-1) ) / stddev(3));
+    FWHM = ceil(FWHM);
+    [X, Y, Z] = meshgrid( (-(FWHM(1)-1):(FWHM(1)-1) ) / FWHM(1), ...
+                          (-(FWHM(2)-1):(FWHM(2)-1) ) / FWHM(2),...
+                          (-(FWHM(3)-1):(FWHM(3)-1) ) / FWHM(3));
     
     h = quartic_kernel( sqrt((X.^2 + Y.^2 + Z.^2)) );
     h = h / sqrt(sum((h(:).^2)));
@@ -111,9 +110,6 @@ elseif strcmp(kernel,'quartic')
     p2  = pad(2);
     p3  = pad(3);
     clear sT h1 h2 h3;
-    % need to specify this, since parfor otherwise does not work, I don't
-    % know why...
-    smo = 0;
 else
     error('Please, specify a valid kernel option, options are "gauss"/"quartic"!')
 end
@@ -192,7 +188,7 @@ else
             end
             % create the smoothed realisation of the field
             if strcmp(kernel, 'gauss')
-                 spm_smooth( raw_noise, Noises, smo );
+                 spm_smooth( raw_noise, Noises, FWHM );
             elseif strcmp(kernel, 'quartic')
                 Noises = convn(raw_noise, h, 'same');
             end
@@ -205,7 +201,8 @@ end
 
 if strcmp(kernel, 'gauss')
     % standard deviation of the smoothed field
-    sigma = ( 2^3 * prod(stddev) * pi^(3/2) )^(-1/2);
+    FWHM = FWHM / (2*sqrt(2*log(2)));
+    sigma = ( 2^3 * prod(FWHM) * pi^(3/2) )^(-1/2);
 
     % normalize fields to standard deviation 1
     f = f / sigma;    
@@ -213,9 +210,11 @@ end
 
 
 % % Compute theoretical LKCs
-% alpha = 1/(4*stddev(1)^2);
+% alpha = 1/(4*FWHM(1)^2);
 
-% close connection to GPUs
-if( state_gcp == 42 && pool_num > 1 )   
-    delete(gcp)
+if( pool_num > 1 )
+    % close connection to GPUs
+    if( state_gcp == 42 )   
+        delete(gcp)
+    end
 end
