@@ -1,4 +1,4 @@
-function [thresh, quantiles, hatdelta, hatsigma] = CopeSets( F, c, lvl, Mboot, bdry_type,...
+function [thresh, quantiles, hatdelta, hatsigma] = CopeSets( F, c, lvls, Mboot, bdry_type,...
                                                              center, normalize, method, delta )
 
 % Computes CoPe all ingredients for CoPe sets.
@@ -6,11 +6,12 @@ function [thresh, quantiles, hatdelta, hatsigma] = CopeSets( F, c, lvl, Mboot, b
 % F:    random field over a domain in R^D, it is an (D+1)-dimensional array,
 %       where the last dimension enumerates the samples
 % c:    threshold for excursions
-% lvl:       vector for which the quantile needs to be estimated
+% lvls:       vector for which the quantile needs to be estimated
 % Mboot:     amount of bootstrap replicates (default=1e3)
 % bdry_type: currently 'linear' or 'true' are supported
 % center:    option to center the field using the sample mean (default=1)
 % normalize: option to normalize the field by sample variance (default=1)
+% method:    option for the bootstrap estimator (default='t')
 % delta:     required, if bdry_type is equal to 'true'. This is the true
 %            population mean function given on a D-dimensional array
 %Output:
@@ -29,7 +30,19 @@ function [thresh, quantiles, hatdelta, hatsigma] = CopeSets( F, c, lvl, Mboot, b
 
 % Fill in unset optional values.
 switch nargin
+    case 5
+        center    = 1;
+        normalize = 1;
+        method    = 't';
+        delta     = 666;
+    case 6
+        normalize = 1;
+        method    = 't';
+        delta     = 666;
     case 7
+        method    = 't';
+        delta     = 666;
+    case 8
         delta     = 666;
 end
 
@@ -56,14 +69,14 @@ end
 %%%% convert F_bdry to residuals if neccessary
 % Center/normalize, if required
 if center
-    F_bdry = F_bdry - repmat( mean(F_bdry,2), [1 N] );
+    F_bdry = F_bdry - mean(F_bdry,2);
 end
 if normalize
-   R = R ./ repmat( transpose(sqrt(var( transpose(R)))), [1 N] );
+   F_bdry = F_bdry ./ std( F_bdry, 0, 2 );
 end
 
 %%%% Estimate the quantiles of the Gaussian process on the boundary
-quantiles = MultiplierBoots( F_bdry, lvl, Mboot, mask, method );
+quantiles = MultiplierBoots( F_bdry, lvls, Mboot, mask, method );
 
 %%%% Compute upper and lower threshold for CoPE sets
 sF = size(F);
@@ -71,8 +84,8 @@ N  = sF(end);
 index = repmat( {':'}, 1, length(sF) );
 sF = sF(1:end-1);
 
-thresh = ones([ sF(1:end) length(lvl) 2]);
+thresh = ones([ sF(1:end) length(lvls) 2]);
 thresh(index{:},1) = c - repmat(shiftdim(quantiles, -length(sF)+1), [sF 1])...
-                     .*repmat(hatsigma,[1 1 length(lvl)]) / sqrt(N);
+                     .*repmat(hatsigma,[1 1 length(lvls)]) / sqrt(N);
 thresh(index{:},2) = c + repmat(shiftdim(quantiles, -length(sF)+1), [sF 1])...
-                     .*repmat(hatsigma,[1 1 length(lvl)]) / sqrt(N);
+                     .*repmat(hatsigma,[1 1 length(lvls)]) / sqrt(N);
