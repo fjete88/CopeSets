@@ -1,4 +1,20 @@
 function [bdry_values] = getBdryvalues(field, bdry_params)
+% Linear interpolation of a field to a boundary.
+% Input:
+%  field:       random field over a domain in R^D, it is an (D+1)-dimensional array,
+%               where the last dimension enumerates the samples
+%  bdry_params: structure generated from getBdryparams
+
+% Output:
+%  bdry_values are the linear interpolated values of field along the
+%  boundary.
+%
+%__________________________________________________________________________
+% References:
+%__________________________________________________________________________
+% Author: Alex Bowring
+% Last changes: 10/25/2018
+%__________________________________________________________________________
 
 dim = size(field);
 D   = length(dim);
