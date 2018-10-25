@@ -2,9 +2,9 @@ function [dilation] = dilateSet( F )
 
 % dilation of a 2D logical field along a dimension using 4 -connectivity
 % Input:
-% F:         logical field over a domain in R^2
-%Output:
-% dilation are the voxel which are in the complement of F and its dilation
+%  F:         logical field over a domain in R^2
+% Output:
+%  dilation are the voxel which are in the complement of F and its dilation
 %
 %__________________________________________________________________________
 % References:
