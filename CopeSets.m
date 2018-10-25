@@ -1,48 +1,68 @@
-function [thresh, quantiles, hatdelta, hatsigma] = CopeSets( F, c, lvls, Mboot, bdry_type,...
-                                                             center, normalize, method, delta )
-
+function [thresh, quantiles, hatdelta, hatsigma] = CopeSets( F, c, lvls, quantEstim,...
+                                                        bdry_type, center, normalize, delta )
 % Computes CoPe all ingredients for CoPe sets.
 % Input:
-% F:    random field over a domain in R^D, it is an (D+1)-dimensional array,
-%       where the last dimension enumerates the samples
-% c:    threshold for excursions
-% lvls:       vector for which the quantile needs to be estimated
-% Mboot:     amount of bootstrap replicates (default=1e3)
-% bdry_type: currently 'linear' or 'true' are supported
-% center:    option to center the field using the sample mean (default=1)
-% normalize: option to normalize the field by sample variance (default=1)
-% method:    option for the bootstrap estimator (default='t')
-% delta:     required, if bdry_type is equal to 'true'. This is the true
+%  F:    random field over a domain in R^D, it is an (D+1)-dimensional array,
+%        where the last dimension enumerates the samples
+%  c:    threshold for excursions
+%  lvls:       vector containing the required confidence levels. Must be
+%              between 0 and 1.
+%  quantEstim: structure containing the name and the parameters for the
+%              quantile estimation method. Choices:
+%               {
+%                quantEstim.name = 'multiplierbootstrap'
+%                quantEstim.params:
+%                   Mboot:     amount of bootstrap replicates (default=5e3)
+%                   method:    option for the bootstrap estimator (default='t')
+%               }
+%  bdry_type: currently 'linear' or 'true' are supported
+%  center:    option to center the field using the sample mean (default=1)
+%  normalize: option to normalize the field by sample variance (default=1)
+%  delta:     required, if bdry_type is equal to 'true'. This is the true
 %            population mean function given on a D-dimensional array
-%Output:
-% thresh is the threshold lower and upper for the sample mean in order to
-% be in the estimated lower and upper excursion sets 
-% quantile is the bootstrapped quantile of the maximum distribution of the 
-% input processes
-% hatdelta is the sample mean of the fields
-% hatsigma is the sample variance of the fields
+% Output:
+%  - thresh is the threshold lower and upper for the sample mean in order to
+%    be in the estimated lower and upper excursion sets 
+%  - quantile is the bootstrapped quantile of the maximum distribution of the 
+%    input processes
+%  - hatdelta is the sample mean of the fields
+%  - hatsigma is the sample variance of the fields
 %__________________________________________________________________________
 % References:
 %__________________________________________________________________________
 % Author: Fabian Telschow (ftelschow@ucsd.edu)
-% Last changes: 10/05/2018
+% Last changes: 10/25/2018
 %__________________________________________________________________________
+%%%%%% Check user specified input
+if any(lvls >=1) || any(lvls<=0)
+    error("The vector lvls needs to have entries between 0 and 1!")
+end
 
-% Fill in unset optional values.
+%%%%%% Fill in unset optional values.
 switch nargin
+    case 3
+        quantEstim = struct('name', "MultiplierBootstrap",...
+                            'params', struct('Mboot', 5e3,...
+                                             'weights', "gaussian",...   
+                                             'method', 't')...
+                                                );
+        bdry_type = 'linear';
+        center    = 1;
+        normalize = 1;
+        delta     = 666;
+    case 4
+        bdry_type = 'linear';
+        center    = 1;
+        normalize = 1;
+        delta     = 666;
     case 5
         center    = 1;
         normalize = 1;
-        method    = 't';
         delta     = 666;
     case 6
         normalize = 1;
-        method    = 't';
         delta     = 666;
     case 7
-        method    = 't';
-        delta     = 666;
-    case 8
         delta     = 666;
 end
 
@@ -76,7 +96,12 @@ if normalize
 end
 
 %%%% Estimate the quantiles of the Gaussian process on the boundary
-quantiles = MultiplierBoots( F_bdry, lvls, Mboot, mask, method );
+if strcmp( quantEstim.name, 'MultiplierBootstrap' )
+    quantiles = MultiplierBoots( F_bdry, lvls, ...
+                    quantEstim.params.Mboot, mask, quantEstim.params.weights, quantEstim.params.method );
+else
+    error("Please specify a valid method for quantile estimation")
+end
 
 %%%% Compute upper and lower threshold for CoPE sets
 sF = size(F);
