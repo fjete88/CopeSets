@@ -16,11 +16,14 @@ function [bdry_values] = getBdryvalues(field, bdry_params)
 % Last changes: 10/25/2018
 %__________________________________________________________________________
 
+%%%%% Compute parameters of the field input
 dim = size(field);
 D   = length(dim);
 
+%%%%% Treat cases of 1D and 2D domain of the field differently
 switch D
     case 2
+        %%%%% Linear Interpolation onto the boundary
         lshift_bdry_values = bdry_params.lshift.w1.*field(bdry_params.lshift.edges) + bdry_params.lshift.w2.*field(bdry_params.lshift.edges(:,[dim(2) 1:dim(2)-1]));
         rshift_bdry_values = bdry_params.rshift.w1.*field(bdry_params.rshift.edges) + bdry_params.rshift.w2.*field(bdry_params.rshift.edges(:,[2:dim(2) 1]));
         ushift_bdry_values = bdry_params.ushift.w1.*field(bdry_params.ushift.edges) + bdry_params.ushift.w2.*field(bdry_params.ushift.edges([dim(1) 1:dim(1)-1],:));
@@ -29,6 +32,7 @@ switch D
         bdry_values = [lshift_bdry_values; rshift_bdry_values; ushift_bdry_values; dshift_bdry_values];
 
     case 3
+        %%%%% Linear Interpolation onto the boundary
         lshift_bdry_values = bdry_params.lshift.w1.*field(bdry_params.lshift.edges) + bdry_params.lshift.w2.*field(bdry_params.lshift.edges(:,[dim(2) 1:dim(2)-1],:));
         rshift_bdry_values = bdry_params.rshift.w1.*field(bdry_params.rshift.edges) + bdry_params.rshift.w2.*field(bdry_params.rshift.edges(:,[2:dim(2) 1],:));
         ushift_bdry_values = bdry_params.ushift.w1.*field(bdry_params.ushift.edges) + bdry_params.ushift.w2.*field(bdry_params.ushift.edges([dim(1) 1:dim(1)-1],:,:));
