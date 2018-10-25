@@ -1,11 +1,11 @@
-function [Y, delta] = generateProcess( n, nsim, stddev, dim, noise, nu,...
+function [Y, delta] = generateProcess( n, nsim, FWHM, dim, noise, nu,...
     kernel, bin, SIGNAL_SHAPE, param, SIGNAL_TYPE, SIGNAL_SD, pool_num )
 
 % Generates an error process
 % Input:
 %   n        -  Sample size
 %   nsim     -  Number of simulations
-%   stddev   -  2-D or 3-D vector containing the std in the different dimensions for
+%   FWHM   -  2-D or 3-D vector containing the std in the different dimensions for
 %               smoothing
 %   dim      -  dimensions of the field
 %   noise    -  options are 'normal', 't', 'uniform' (default: 'normal')
@@ -16,7 +16,7 @@ function [Y, delta] = generateProcess( n, nsim, stddev, dim, noise, nu,...
 %   bin      -  2x3 matrix allowing to bin parts of the cube to produce
 %               non-stationary noise. Note that we need bin(1,i)*bin(2,i) < dim(i)
 %   SIGNAL_SHAPE - Shape of the mean function of noise. Currently, 'linear'
-%                  'quadratic', 'circle' and 'spheroid' are supported.
+%                  'quadratic' and 'circle' are supported.
 %   param    -  If SIGNAL_SHAPE is 'linear', param is either a number Y in
 %               which case the signal is a ramp from 0 to X, or a vector
 %               [X,Y] which generates a signal ramp from X to Y. If
@@ -43,8 +43,8 @@ function [Y, delta] = generateProcess( n, nsim, stddev, dim, noise, nu,...
 
 %%%%% dimension of the domain
 D = length(dim);
-if D ~= length(stddev)
-    error('stddev and dim must have the same size!')
+if D ~= length(FWHM)
+    error('FWHM and dim must have the same size!')
 end
 if size(SIGNAL_SD) ~= dim
     error('SIGNAL_SD needs to have dimension "dim"!')
@@ -52,10 +52,10 @@ end
 
 %%%%% Generate noise fields and change its variance according to SIGNAL_SD
 if D == 2
-    eps = SmoothField2D( n*nsim, 1, stddev, dim, noise, nu,...
+    eps = SmoothField2D( n*nsim, 1, FWHM, dim, noise, nu,...
                                     kernel, bin, pool_num ) .* SIGNAL_SD;
 elseif D == 3
-    eps = SmoothField3D( n*nsim, 1, stddev, dim, noise, nu,...
+    eps = SmoothField3D( n*nsim, 1, FWHM, dim, noise, nu,...
                                     kernel, bin, pool_num ) .* SIGNAL_SD;
 else
     error('Currently, only fields up to 3D domain are supported!')
