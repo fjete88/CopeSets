@@ -73,6 +73,11 @@ D = length(size(F))-1;
 hatdelta = mean( F, D+1 ); 
 hatsigma = std( F, 0, D+1 );
 
+%%%% ensure there are values above the threshold!
+if sum(hatdelta(:) >= c) == 0
+    error("The threshold c is to high. There are now values exceeding it!")
+end
+
 %%%% Compute the process on the boundary and its mask
 switch(bdry_type)
     case 'linear'
