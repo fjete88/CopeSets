@@ -71,14 +71,26 @@ thresh_truebdry   = zeros([dim nlvls nsim 2]);
 thresh_linbdry    = zeros([dim nlvls nsim 2]);
 thresh_erodbdry   = zeros([dim nlvls nsim 2]);
 
-if precomp == 1
+if precomp(1) == 1 || length(size(precomp)) > 2
     %%%%%% Simulate the fields for the simulation
-    tic
-        [Y, delta] = generateProcess( n, nsim, paramNoise.FWHM, paramNoise.dim,...
-                                      paramNoise.noise, paramNoise.nu, paramNoise.kernel,...
-                                      paramNoise.bin, paramSignal.shape, paramSignal.shapeparam,...
-                                      paramSignal.type, paramNoise.sd, pool_num );
-    toc
+    if precomp == 1
+        tic
+            [Y, delta] = generateProcess( n, nsim, paramNoise.FWHM, paramNoise.dim,...
+                                          paramNoise.noise, paramNoise.nu, paramNoise.kernel,...
+                                          paramNoise.bin, paramSignal.shape, paramSignal.shapeparam,...
+                                          paramSignal.type, paramNoise.sd, pool_num );
+        toc
+    %%%%%% Save the precomputed fields into Y
+    else
+        tic
+            [~, delta] = generateProcess( 1, 1, paramNoise.FWHM, paramNoise.dim,...
+                                          paramNoise.noise, paramNoise.nu, paramNoise.kernel,...
+                                          paramNoise.bin, paramSignal.shape, paramSignal.shapeparam,...
+                                          paramSignal.type, paramNoise.sd, pool_num );
+             Y = precomp;
+             clear precomp;
+        toc
+    end
     %%%%%% Compute the quantiles and threshold fields from the precomputed
     %%%%%% fields
     % s
@@ -126,7 +138,10 @@ results.covRate.truebdry = [covRate_truebdry; covRate_truebdry_new];
 results.covRate.linbdry = [covRate_linbdry; covRate_linbdry_new];
 results.covRate.erodbdry = [covRate_erodbdry; covRate_erodbdry_new];
 % standard error of the simulation
-results.stderr = sqrt(lvls.*(1-lvls)/nsim);
+results.stdErr.rough = sqrt(lvls.*(1-lvls)/nsim);
+results.stdErr.truebdry = sqrt(results.covRate.truebdry .* (1-results.covRate.truebdry)/nsim);
+results.stdErr.linbdry = sqrt(results.covRate.linbdry .* (1-results.covRate.linbdry)/nsim);
+results.stdErr.erodbdry = sqrt(results.covRate.erodbdry .* (1-results.covRate.erodbdry)/nsim);
 % estimates of the quantile
 results.quant.truebdry     = a_truebdry;
 results.quant.linbdry      = a_linbdry;
