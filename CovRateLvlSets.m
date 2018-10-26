@@ -33,7 +33,7 @@ truefm = reshape( repmat(reshape( truef, [prod(sf) 1] ), 1, N ) , [sf N] ) ;
 % Finding the edges and weights for interpolating true field = c
 if ( Bdry_test )
     bdry_params = getBdryparams(truef, c);
-    bdry_length = length(bdry_params.lshift.w1);
+    bdry_length = bdry_params.length;
     low_thresh_bdry_values  = zeros(bdry_length, N);
     high_thresh_bdry_values = zeros(bdry_length, N);    
     hatf_bdry_values        = zeros(bdry_length, N);   
