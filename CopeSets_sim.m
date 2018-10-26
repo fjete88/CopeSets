@@ -71,29 +71,19 @@ thresh_truebdry   = zeros([dim nlvls nsim 2]);
 thresh_linbdry    = zeros([dim nlvls nsim 2]);
 thresh_erodbdry   = zeros([dim nlvls nsim 2]);
 
-if precomp(1) == 1 || length(size(precomp)) > 2
+if precomp(1) == 1 || length(size(precomp)) == length([dim n nsim])
     %%%%%% Simulate the fields for the simulation
-    if precomp == 1
-        tic
-            [Y, delta] = generateProcess( n, nsim, paramNoise.FWHM, paramNoise.dim,...
-                                          paramNoise.noise, paramNoise.nu, paramNoise.kernel,...
-                                          paramNoise.bin, paramSignal.shape, paramSignal.shapeparam,...
-                                          paramSignal.type, paramNoise.sd, pool_num );
-        toc
-    %%%%%% Save the precomputed fields into Y
-    else
-        tic
-            [~, delta] = generateProcess( 1, 1, paramNoise.FWHM, paramNoise.dim,...
-                                          paramNoise.noise, paramNoise.nu, paramNoise.kernel,...
-                                          paramNoise.bin, paramSignal.shape, paramSignal.shapeparam,...
-                                          paramSignal.type, paramNoise.sd, pool_num );
-             Y = precomp;
-             clear precomp;
-        toc
-    end
+    tic
+        [Y, delta] = generateProcess( n, nsim, paramNoise.FWHM, paramNoise.dim,...
+                                      paramNoise.noise, paramNoise.nu, paramNoise.kernel,...
+                                      paramNoise.bin, paramSignal.shape, paramSignal.shapeparam,...
+                                      paramSignal.type, paramNoise.sd, pool_num, precomp );
+         % clear working memory saved by precomp in case it is precomputed,
+         % it might be a huge array
+         clear precomp;
+    toc
     %%%%%% Compute the quantiles and threshold fields from the precomputed
     %%%%%% fields
-    % s
     switch( paramSignal.type )
         case 'signal'
             tic

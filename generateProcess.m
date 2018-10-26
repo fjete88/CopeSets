@@ -1,38 +1,40 @@
 function [Y, delta] = generateProcess( n, nsim, FWHM, dim, noise, nu,...
-    kernel, bin, SIGNAL_SHAPE, param, SIGNAL_TYPE, SIGNAL_SD, pool_num )
+    kernel, bin, SIGNAL_SHAPE, param, SIGNAL_TYPE, SIGNAL_SD, pool_num, precomp )
 
 % Generates an error process
 % Input:
-%   n        -  Sample size
-%   nsim     -  Number of simulations
-%   FWHM   -  2-D or 3-D vector containing the std in the different dimensions for
+%   n:          Sample size
+%   nsim:       Number of simulations
+%   FWHM:       2-D or 3-D vector containing the std in the different dimensions for
 %               smoothing
-%   dim      -  dimensions of the field
-%   noise    -  options are 'normal', 't', 'uniform' (default: 'normal')
-%   nu       -  parameters for noise,
+%   dim:        dimensions of the field
+%   noise:      options are 'normal', 't', 'uniform' (default: 'normal')
+%   nu:         parameters for noise,
 %                 't'       = degrees of freedom
 %                 'uniform' = half length of interval
-%   kernel   -  options 'gauss' and 'quartic' and 't-density'
-%   bin      -  2x3 matrix allowing to bin parts of the cube to produce
+%   kernel:     options 'gauss' and 'quartic' and 't-density'
+%   bin:        2x3 matrix allowing to bin parts of the cube to produce
 %               non-stationary noise. Note that we need bin(1,i)*bin(2,i) < dim(i)
-%   SIGNAL_SHAPE - Shape of the mean function of noise. Currently, 'linear'
+%   SIGNAL_SHAPE:  Shape of the mean function of noise. Currently, 'linear'
 %                  'quadratic' and 'circle' are supported.
-%   param    -  If SIGNAL_SHAPE is 'linear', param is either a number Y in
-%               which case the signal is a ramp from 0 to X, or a vector
-%               [X,Y] which generates a signal ramp from X to Y. If
-%               SIGNAL_SHAPE is 'circle', param is a vector (rad, mag, smo)
-%               where rad is radius of signal, mag is magniture and smo is
-%               smoothing FWHM.
-%   SIGNAL_TYPE  - gives the signal type which is aimed for. Currently, 'signal'
-%                  and 'SNR' are possible.
-%   SIGNAL_SD    - Array of size dim specifying the standard deviation of
-%                  the error field
-%   pool_num -  number of GPUs used for parallizing, must be greater than 1
-%               to enable.
+%   param:       If SIGNAL_SHAPE is 'linear', param is either a number Y in
+%                which case the signal is a ramp from 0 to X, or a vector
+%                [X,Y] which generates a signal ramp from X to Y. If
+%                SIGNAL_SHAPE is 'circle', param is a vector (rad, mag, smo)
+%                where rad is radius of signal, mag is magniture and smo is
+%                smoothing FWHM.
+%   SIGNAL_TYPE: gives the signal type which is aimed for. Currently, 'signal'
+%                and 'SNR' are possible.
+%   SIGNAL_SD:   Array of size dim specifying the standard deviation of
+%                the error field  
+%   pool_num:    number of GPUs used for parallizing, must be greater than 1
+%                to enable.
+%   precomp:     If this is an array of dim x n x nsim, then it is
+%                considered as precomputed random noise
 %
 % Output:
 %   f        -  Array of size dim x n x nsim
-%   delta    -  True signal or True SNR of the simulated process
+%   delta    -  True signal or True SNR of dimenison [dimthe simulated process
 %
 %__________________________________________________________________________
 % References:
@@ -40,6 +42,9 @@ function [Y, delta] = generateProcess( n, nsim, FWHM, dim, noise, nu,...
 % Author: Fabian Telschow (ftelschow@ucsd.edu)
 % Last changes: 10/22/2018
 %__________________________________________________________________________
+if nargin == 13
+    precomp = 1;
+end
 
 %%%%% dimension of the domain
 D = length(dim);
@@ -51,18 +56,26 @@ if size(SIGNAL_SD) ~= dim
 end
 
 %%%%% Generate noise fields and change its variance according to SIGNAL_SD
-if D == 2
-    eps = SmoothField2D( n*nsim, 1, FWHM, dim, noise, nu,...
-                                    kernel, bin, pool_num ) .* SIGNAL_SD;
-elseif D == 3
-    eps = SmoothField3D( n*nsim, 1, FWHM, dim, noise, nu,...
-                                    kernel, bin, pool_num ) .* SIGNAL_SD;
+if precomp(1) == 1 || length(size(precomp)) == 2
+    if D == 2
+        eps = SmoothField2D( n*nsim, 1, FWHM, dim, noise, nu,...
+                                        kernel, bin, pool_num ) .* SIGNAL_SD;
+    elseif D == 3
+        eps = SmoothField3D( n*nsim, 1, FWHM, dim, noise, nu,...
+                                        kernel, bin, pool_num ) .* SIGNAL_SD;
+    else
+        error('Currently, only fields up to 3D domain are supported!')
+    end
 else
-    error('Currently, only fields up to 3D domain are supported!')
+    if all( size(precomp) == [dim n nsim] )
+        eps = precomp;
+        clear precomp;
+    else
+        error("The precomputed error field seems not to have the dimensions of the simulations!")
+    end
 end
 
-
-%%%%%% Compute Signal plus Observations
+%%%%%% Compute the mean Signal
 if D==2
     [xx, yy] = ndgrid( (0.5:dim(1))/dim(1), (0.5:dim(2))/dim(2) );
     switch(SIGNAL_SHAPE)
@@ -73,16 +86,18 @@ if D==2
             elseif size(aa,2) == 2
                 mu = (aa(2) - aa(1))*yy + aa(1);
             end 
-        case 'quadratic', mu = aa*( 1 - (xx-dim(1)/2).^2 + (yy-dim(2)/2).^2);
+        case 'quadratic'
+            aa = param;
+            mu = aa*( 1 - (xx-dim(1)/2).^2 + (yy-dim(2)/2).^2);
         case 'circle'
             rad   = param(1);
             mag   = param(2);
             smo   = param(3);
             
             cent0 = dim/2 + 1/2;
-            Comm  = sprintf('Circle r=%02d sm=%1d',rad,smo);
+            %Comm  = sprintf('Circle r=%02d sm=%1d',rad,smo);
             
-            [x,y] = ndgrid([1:dim(1)], [1:dim(2)]);
+            [x,y] = ndgrid( 1:dim(1), 1:dim(2) );
             Rmap  = sqrt((x-cent0(1)).^2 + (y-cent0(2)).^2);
             mu    = mySmooth(Rmap<=rad,smo)*mag;
     end    
@@ -97,8 +112,9 @@ else
             elseif size(aa,2) == 2
                 mu = (aa(2) - aa(1))*xx + aa(1);
             end 
-            mu = aa*xx;
-        case 'quadratic', mu = aa*( 1 - (xx-dim(1)/2).^2 + (yy-dim(2)/2).^2 ...
+        case 'quadratic'
+            aa = param; 
+            mu = aa*( 1 - (xx-dim(1)/2).^2 + (yy-dim(2)/2).^2 ...
                                       + (zz-dim(3)/2).^2 );
         case 'circle'
             rad = param(1);
@@ -106,18 +122,18 @@ else
             smo = param(3);
             
             cent0 = dim/2 + 1/2;
-            Comm  = sprintf('Sphere r=%02d sm=%1d',rad,smo);
+            %Comm  = sprintf('Sphere r=%02d sm=%1d',rad,smo);
             
-            [x, y, z] = ndgrid([1:dim(1)],[1:dim(2)],[1:dim(3)]);
+            [x, y, z] = ndgrid( 1:dim(1), 1:dim(2), 1:dim(3) );
             Rmap = sqrt((x-cent0(1)).^2 + (y-cent0(2)).^2 + (z-cent0(3)).^2);
             mu    = mySmooth(Rmap<=rad,smo)*mag;        
     end
 end
 
-% construct signal and reshape
+%%%%%% construct signal and reshape
 Y = reshape(mu + eps, [dim n nsim]) ;
 
-% Observed
+%%%%%% Unobserved true signal/SNR of the simulation
 switch(SIGNAL_TYPE)
     case 'signal', delta = mu;
     case 'SNR',    delta = mu ./ SIGNAL_SD;
