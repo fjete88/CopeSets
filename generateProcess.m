@@ -69,9 +69,9 @@ if D==2
         case 'linear'
             aa = param;
             if size(aa,2) == 1
-                mu = aa*xx;
+                mu = aa*yy;
             elseif size(aa,2) == 2
-                mu = (aa(2) - aa(1))*xx + aa(1);
+                mu = (aa(2) - aa(1))*yy + aa(1);
             end 
         case 'quadratic', mu = aa*( 1 - (xx-dim(1)/2).^2 + (yy-dim(2)/2).^2);
         case 'circle'
