@@ -64,10 +64,10 @@ end
 
 %%%%%% Compute Signal plus Observations
 if D==2
-    [xx, yy] = meshgrid( (0.5:dim(1))/dim(1), (0.5:dim(2))/dim(2) );
+    [xx, yy] = ndgrid( (0.5:dim(1))/dim(1), (0.5:dim(2))/dim(2) );
     switch(SIGNAL_SHAPE)
         case 'linear'
-            aa = param;             
+            aa = param;
             if size(aa,2) == 1
                 mu = aa*xx;
             elseif size(aa,2) == 2
@@ -87,7 +87,7 @@ if D==2
             mu    = mySmooth(Rmap<=rad,smo)*mag;
     end    
 else
-    [xx, yy, zz] = meshgrid( (0.5:dim(1))/dim(1), (0.5:dim(2))/dim(2),...
+    [xx, yy, zz] =ndgrid( (0.5:dim(1))/dim(1), (0.5:dim(2))/dim(2),...
                              (0.5:dim(3))/dim(3) );
     switch(SIGNAL_SHAPE)
         case 'linear'    
