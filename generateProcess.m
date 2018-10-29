@@ -1,5 +1,5 @@
 function [Y, delta] = generateProcess( n, nsim, FWHM, dim, noise, nu,...
-    kernel, bin, SIGNAL_SHAPE, param, SIGNAL_TYPE, SIGNAL_SD, pool_num, precomp )
+    kernel, bin, SIGNAL_SHAPE, param, SIGNAL_TYPE, SIGNAL_SD, pool_num, Y )
 
 % Generates an error process
 % Input:
@@ -29,11 +29,11 @@ function [Y, delta] = generateProcess( n, nsim, FWHM, dim, noise, nu,...
 %                the error field  
 %   pool_num:    number of GPUs used for parallizing, must be greater than 1
 %                to enable.
-%   precomp:     If this is an array of dim x n x nsim, then it is
+%   Y:           If this is an array of dim x n x nsim, then it is
 %                considered as precomputed random noise
 %
 % Output:
-%   f        -  Array of size dim x n x nsim
+%   Y        -  Array of size dim x n x nsim
 %   delta    -  True signal or True SNR of dimenison [dimthe simulated process
 %
 %__________________________________________________________________________
@@ -43,11 +43,14 @@ function [Y, delta] = generateProcess( n, nsim, FWHM, dim, noise, nu,...
 % Last changes: 10/22/2018
 %__________________________________________________________________________
 if nargin == 13
-    precomp = 1;
+    Y = 1;
 end
 
 %%%%% dimension of the domain
 D = length(dim);
+index  = repmat( {':'}, 1, D+1 );
+
+%%%%% Check input data
 if D ~= length(FWHM)
     error('FWHM and dim must have the same size!')
 end
@@ -56,21 +59,18 @@ if size(SIGNAL_SD) ~= dim
 end
 
 %%%%% Generate noise fields and change its variance according to SIGNAL_SD
-if precomp(1) == 1 || length(size(precomp)) == 2
+if Y(1) == 1 || length(size(Y)) == 2
     if D == 2
-        eps = SmoothField2D( n*nsim, 1, FWHM, dim, noise, nu,...
+        Y = SmoothField2D( n*nsim, 1, FWHM, dim, noise, nu,...
                                         kernel, bin, pool_num ) .* SIGNAL_SD;
     elseif D == 3
-        eps = SmoothField3D( n*nsim, 1, FWHM, dim, noise, nu,...
+        Y = SmoothField3D( n*nsim, 1, FWHM, dim, noise, nu,...
                                         kernel, bin, pool_num ) .* SIGNAL_SD;
     else
         error('Currently, only fields up to 3D domain are supported!')
     end
 else
-    if all( size(precomp) == [dim n nsim] )
-        eps = precomp;
-        clear precomp;
-    else
+    if ~all( size(Y) == [dim n nsim] )
         error("The precomputed error field seems not to have the dimensions of the simulations!")
     end
 end
@@ -129,9 +129,13 @@ else
             mu    = mySmooth(Rmap<=rad,smo)*mag;        
     end
 end
+clear xx yy
 
-%%%%%% construct signal and reshape
-Y = reshape(mu + eps, [dim n nsim]) ;
+%%%%%% construct signal
+for nn = 1:nsim
+    Y(index{:},nn) = mu + Y(index{:},nn);
+end
+%Y = reshape(mu + errorfield, [dim n nsim]) ;
 
 %%%%%% Unobserved true signal/SNR of the simulation
 switch(SIGNAL_TYPE)

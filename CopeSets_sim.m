@@ -1,4 +1,4 @@
-function results = CopeSets_sim( nsim, n, lvls, paramSignal, c, paramNoise, quantEstim, precomp, pool_num )
+function results = CopeSets_sim( nsim, n, lvls, paramSignal, c, paramNoise, quantEstim, Y, pool_num )
 
 % Simulates the covering rate of Cope sets for various signals and error processes.
 % Input:
@@ -10,7 +10,7 @@ function results = CopeSets_sim( nsim, n, lvls, paramSignal, c, paramNoise, quan
 %  paramNoise: structure containing the parameters for the error process
 %  quantEstim: structure containing the parameters for the quantile
 %              estimation
-%  precomp:   If '1' the random fields are precomputed for all nsim
+%  Y:         If '1' the random fields are precomputed for all nsim
 %             simulations. Note that it might run into storage problems.
 %             If '0' random fields are separetly computed in a for loop.
 %  pool_num:  number of GPUs used for parallizing, must be greater than 1
@@ -34,7 +34,7 @@ switch nargin
                                              'weights', "gaussian",...   
                                              'method', 't')...
                                                 );
-        precomp = 1;
+        Y = 1;
         pool_num = 1;
     case 7
         quantEstim = struct('name', "MultiplierBootstrap",...
@@ -42,7 +42,7 @@ switch nargin
                                              'weights', "gaussian",...   
                                              'method', 't')...
                                                 );
-        precomp  = 1;
+        Y  = 1;
         pool_num = 1;
     case 8
         pool_num  = 1;
@@ -71,16 +71,13 @@ thresh_truebdry   = zeros([dim nlvls nsim 2]);
 thresh_linbdry    = zeros([dim nlvls nsim 2]);
 thresh_erodbdry   = zeros([dim nlvls nsim 2]);
 
-if precomp(1) == 1 || length(size(precomp)) == length([dim n nsim])
+if Y(1) == 1 || length(size(Y)) == length([dim n nsim])
     %%%%%% Simulate the fields for the simulation
     tic
         [Y, delta] = generateProcess( n, nsim, paramNoise.FWHM, paramNoise.dim,...
                                       paramNoise.noise, paramNoise.nu, paramNoise.kernel,...
                                       paramNoise.bin, paramSignal.shape, paramSignal.shapeparam,...
-                                      paramSignal.type, paramNoise.sd, pool_num, precomp );
-         % clear working memory saved by precomp in case it is precomputed,
-         % it might be a huge array
-         clear precomp;
+                                      paramSignal.type, paramNoise.sd, pool_num, Y );
     toc
     %%%%%% Compute the quantiles and threshold fields from the precomputed
     %%%%%% fields
