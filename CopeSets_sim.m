@@ -132,7 +132,7 @@ results.stdErr.erodbdry = sqrt(results.covRate.erodbdry .* (1-results.covRate.er
 % estimates of the quantile
 results.quant.truebdry     = a_truebdry;
 results.quant.linbdry      = a_linbdry;
-results.quant.erodbdrybdry = a_erodbdry;
+results.quant.erodbdry     = a_erodbdry;
 % params of the simulation
 results.lvls = lvls;
 results.c = c;
