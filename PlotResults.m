@@ -52,7 +52,9 @@ set(groot, 'defaultAxesTickLabelInterpreter','latex'); set(groot, 'defaultLegend
 dim    = size(result);
 result = reshape(result, [prod(dim(1:end-1)), dim(end)]);
 dim    = size(result);
-
+% initialize FWHMnames
+FWHMnames = [];
+slopenames = [];
 % get the vector with the subjects
 nVec   = 1:dim(2);
 for l = 1:dim(2)
@@ -66,6 +68,13 @@ covRates = zeros([ dim ,length(lvls)] );
 scStdErr = stdfac*result{1,1}.stdErr.rough;
 
 for i = 1:dim(1)
+    % fill FWHMnames and slopenames
+    FWHMnames  = [FWHMnames result{i,1}.paramNoise.FWHM(1)];
+    slope      = result{i,1}.paramSignal.shapeparam
+    if length(slope)==2
+        slope = diff(slope)
+    end
+    slopenames = [slopenames slope]
     for j = 1:dim(2)
         for l = 1:length(lvls)
             switch type
@@ -101,7 +110,11 @@ for l = lvls
     % Add title
     title(titlename)
     % Add a legend
-    legend( 'FWHM 5, slope 2', 'FWHM 10, slope 2', 'FWHM 5, slope 4', 'FWHM 10, slope 4', 'nominal level', '1.96 x stdErr', 'Location', 'southeast' );
+    legend( ['FWHM ', num2str(FWHMnames(1)), ' slope ', num2str(slopenames(1))],...
+            ['FWHM ', num2str(FWHMnames(2)), ' slope ', num2str(slopenames(2))],...
+            ['FWHM ', num2str(FWHMnames(3)), ' slope ', num2str(slopenames(3))],...
+            ['FWHM ', num2str(FWHMnames(3)), ' slope ', num2str(slopenames(4))],...
+            'nominal level', '1.96 x stdErr', 'Location', 'southeast' );
     set(gca, 'fontsize', 14);
     axis square;
     hold off

@@ -12,3 +12,9 @@ PlotResults( sim5050tResult, 'pics/5050tlinResult', 'linbdry', 'CovRate: t-boots
 PlotResults( sim5050tResult, 'pics/5050tregResult', 'erodbdry', 'CovRate: t-boots/erodbdry Estim')
 PlotResults( sim5050tResult, 'pics/5050terodResult', 'truebdry', 'CovRate: t-boots/truedbdry Estim')
 
+i=2;
+j=4;
+
+A =[[sim5050regResult{1,i,j}.paramNoise.FWHM' sim5050regResult{1,i,j}.covRate.linbdry];...
+    [sim5050regResult{2,i,j}.paramNoise.FWHM' sim5050regResult{2,i,j}.covRate.linbdry]];
+A
