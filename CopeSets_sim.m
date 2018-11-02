@@ -66,14 +66,12 @@ a_truebdry       = zeros(nlvls,nsim);
 a_linbdry        = zeros(nlvls,nsim);
 a_erodbdry       = zeros(nlvls,nsim);
 
-% Initialize fields to save the thresholds and estimators
-hatdelta          = zeros([dim nsim]);
-hatsigma          = zeros([dim nsim]);
-thresh_truebdry   = zeros([dim nlvls nsim 2]);
-thresh_linbdry    = zeros([dim nlvls nsim 2]);
-thresh_erodbdry   = zeros([dim nlvls nsim 2]);
-
 if Y(1) == 1 || length(size(Y)) == length([dim n nsim])
+    % Initialize fields to save the thresholds and estimators
+    hatdelta          = zeros([dim nsim]);
+    thresh_truebdry   = zeros([dim nlvls nsim 2]);
+    thresh_linbdry    = zeros([dim nlvls nsim 2]);
+    thresh_erodbdry   = zeros([dim nlvls nsim 2]);
     %%%%%% Simulate the fields for the simulation
     tic
         [Y, delta] = generateProcess( n, nsim, paramNoise.FWHM, paramNoise.dim,...
@@ -92,7 +90,7 @@ if Y(1) == 1 || length(size(Y)) == length([dim n nsim])
                         = CopeSets( Y(index1{:},k), c, lvls, quantEstim, 'true', 1, 1, delta );
                 [thresh_linbdry(index1{:},k,:), a_linbdry(:,k), ~, ~]...
                         = CopeSets( Y(index1{:},k), c, lvls, quantEstim, 'linear' );
-                [thresh_erodbdry(index1{:},k,:), a_erodbdry(:,k), hatdelta(index{:},k), hatsigma(index{:},k)]...
+                [thresh_erodbdry(index1{:},k,:), a_erodbdry(:,k), hatdelta(index{:},k), ~]...
                         = CopeSets( Y(index1{:},k), c, lvls, quantEstim, 'erodilation' );
             end
             toc
@@ -104,7 +102,7 @@ if Y(1) == 1 || length(size(Y)) == length([dim n nsim])
                         = CopeSets_SNR( Y(index1{:},k), c, lvls, 5e3, 'true', 't', delta );
                 [thresh_linbdry(index1{:},k,:), a_linbdry(:,k), ~, ~]...
                         = CopeSets_SNR( Y(index1{:},k), c, lvls, 5e3, 'linear', 't' );
-                [thresh_erodbdry(index1{:},k,:), a_erodbdry(:,k), hatdelta(index{:},k), hatsigma(index{:},k)]...
+                [thresh_erodbdry(index1{:},k,:), a_erodbdry(:,k), hatdelta(index{:},k), ~]...
                         = CopeSets_SNR( Y(index1{:},k), c, lvls, 5e3, 'erodilation', 't' );
 
             end
@@ -122,6 +120,13 @@ if Y(1) == 1 || length(size(Y)) == length([dim n nsim])
 else
     %%% Set Y to be the batchnumber
     batchnumber = Y;
+    % Initialize fields to save the thresholds and estimators for batch
+    % simulation to save working memory
+    hatdelta          = zeros([dim batchnumber]);
+    thresh_truebdry   = zeros([dim nlvls batchnumber 2]);
+    thresh_linbdry    = zeros([dim nlvls batchnumber 2]);
+    thresh_erodbdry   = zeros([dim nlvls batchnumber 2]);
+    
     %%% Check whether batch number divides nsim
     if( mod(nsim,batchnumber)~=0 )
         error("Choose the batch number such that nsim/batchnumber is an integer!")
@@ -143,7 +148,7 @@ else
                                       paramNoise.noise, paramNoise.nu, paramNoise.kernel,...
                                       paramNoise.bin, paramSignal.shape, paramSignal.shapeparam,...
                                       paramSignal.type, paramNoise.sd, pool_num, 0 );
-    %%%%%% Compute the quantiles and threshold fields for the small
+        %%%%%% Compute the quantiles and threshold fields for the small
         %%%%%% batch
         switch( paramSignal.type )
             case 'signal'
@@ -152,11 +157,11 @@ else
                 for k = batchrange
                     count = count+1;
                     % Obtain quantile estimate    
-                    [thresh_truebdry(index1{:},k,:), a_truebdry(:,k), ~, ~]...
+                    [thresh_truebdry(index1{:},count,:), a_truebdry(:,k), ~, ~]...
                             = CopeSets( Y(index1{:},count), c, lvls, quantEstim, 'true', 1, 1, delta );
-                    [thresh_linbdry(index1{:},k,:), a_linbdry(:,k), ~, ~]...
+                    [thresh_linbdry(index1{:},count,:), a_linbdry(:,k), ~, ~]...
                             = CopeSets( Y(index1{:},count), c, lvls, quantEstim, 'linear' );
-                    [thresh_erodbdry(index1{:},k,:), a_erodbdry(:,k), hatdelta(index{:},k), hatsigma(index{:},k)]...
+                    [thresh_erodbdry(index1{:},count,:), a_erodbdry(:,k), hatdelta(index{:},count), ~]...
                             = CopeSets( Y(index1{:},count), c, lvls, quantEstim, 'erodilation' );
                 end
             case 'SNR'
@@ -165,28 +170,28 @@ else
                 for k = batchrange
                     count = count+1;
                     % Obtain quantile estimate    
-                    [thresh_truebdry(index1{:},k,:), a_truebdry(:,k), ~, ~]...
+                    [thresh_truebdry(index1{:},count,:), a_truebdry(:,k), ~, ~]...
                             = CopeSets_SNR( Y(index1{:},count), c, lvls, 5e3, 'true', 't', delta );
-                    [thresh_linbdry(index1{:},k,:), a_linbdry(:,k), ~, ~]...
+                    [thresh_linbdry(index1{:},count,:), a_linbdry(:,k), ~, ~]...
                             = CopeSets_SNR( Y(index1{:},count), c, lvls, 5e3, 'linear', 't' );
-                    [thresh_erodbdry(index1{:},k,:), a_erodbdry(:,k), hatdelta(index{:},k), hatsigma(index{:},k)]...
+                    [thresh_erodbdry(index1{:},count,:), a_erodbdry(:,k), hatdelta(index{:},count), ~]...
                             = CopeSets_SNR( Y(index1{:},count), c, lvls, 5e3, 'erodilation', 't' );
 
                 end
         end % switch cases
         %%%%%% Compute the covering rate for the batch
-        covRate_truebdry     = covRate_truebdry + CovRateLvlSets( delta, hatdelta(index{:},batchrange),...
-                                               thresh_truebdry(index1{:},batchrange,:), c, 0 );
-        covRate_linbdry      = covRate_linbdry + CovRateLvlSets( delta, hatdelta(index{:},batchrange),...
-                                               thresh_linbdry(index1{:},batchrange,:),  c, 0 );
-        covRate_erodbdry     = covRate_erodbdry + CovRateLvlSets( delta, hatdelta(index{:},batchrange),...
-                                               thresh_erodbdry(index1{:},batchrange,:), c, 0 );
-        covRate_truebdry_new = covRate_truebdry_new + CovRateLvlSets( delta, hatdelta(index{:},batchrange),...
-                                               thresh_truebdry(index1{:},batchrange,:), c, 1 );
-        covRate_linbdry_new  = covRate_linbdry_new + CovRateLvlSets( delta, hatdelta(index{:},batchrange),...
-                                               thresh_linbdry(index1{:},batchrange,:),  c, 1 );
-        covRate_erodbdry_new =  covRate_erodbdry_new + CovRateLvlSets( delta, hatdelta(index{:},batchrange),...
-                                               thresh_erodbdry(index1{:},batchrange,:), c, 1 );
+        covRate_truebdry     = covRate_truebdry + CovRateLvlSets( delta, hatdelta,...
+                                               thresh_truebdry, c, 0 );
+        covRate_linbdry      = covRate_linbdry + CovRateLvlSets( delta, hatdelta,...
+                                               thresh_linbdry,  c, 0 );
+        covRate_erodbdry     = covRate_erodbdry + CovRateLvlSets( delta, hatdelta,...
+                                               thresh_erodbdry, c, 0 );
+        covRate_truebdry_new = covRate_truebdry_new + CovRateLvlSets( delta, hatdelta,...
+                                               thresh_truebdry, c, 1 );
+        covRate_linbdry_new  = covRate_linbdry_new + CovRateLvlSets( delta, hatdelta,...
+                                               thresh_linbdry,  c, 1 );
+        covRate_erodbdry_new =  covRate_erodbdry_new + CovRateLvlSets( delta, hatdelta,...
+                                               thresh_erodbdry, c, 1 );
     end % loop over batches
     %%%%%% make the covering rates an average since they were simply added
     %%%%%% in the loop over the batches
@@ -201,12 +206,12 @@ end % end precomputed versus batch simulation if/ele statement
 %%%%%%% report the results of the simulation
 % save the covering rate results
 results.covRate.truebdry = [covRate_truebdry; covRate_truebdry_new];
-results.covRate.linbdry = [covRate_linbdry; covRate_linbdry_new];
+results.covRate.linbdry  = [covRate_linbdry; covRate_linbdry_new];
 results.covRate.erodbdry = [covRate_erodbdry; covRate_erodbdry_new];
 % standard error of the simulation
-results.stdErr.rough = sqrt(lvls.*(1-lvls)/nsim);
+results.stdErr.rough    = sqrt(lvls.*(1-lvls)/nsim);
 results.stdErr.truebdry = sqrt(results.covRate.truebdry .* (1-results.covRate.truebdry)/nsim);
-results.stdErr.linbdry = sqrt(results.covRate.linbdry .* (1-results.covRate.linbdry)/nsim);
+results.stdErr.linbdry  = sqrt(results.covRate.linbdry .* (1-results.covRate.linbdry)/nsim);
 results.stdErr.erodbdry = sqrt(results.covRate.erodbdry .* (1-results.covRate.erodbdry)/nsim);
 % estimates of the quantile
 results.quant.truebdry     = a_truebdry;
