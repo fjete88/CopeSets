@@ -10,9 +10,11 @@ function results = CopeSets_sim( nsim, n, lvls, paramSignal, c, paramNoise, quan
 %  paramNoise: structure containing the parameters for the error process
 %  quantEstim: structure containing the parameters for the quantile
 %              estimation
-%  Y:         If '1' the random fields are precomputed for all nsim
-%             simulations. Note that it might run into storage problems.
-%             If '0' random fields are separetly computed in a for loop.
+%  Y:         Either a field of precomputed random error processes, i.e. an
+%             array of size paramNoise.dim x n x nsim
+%             or an integer greater 1 specifying the number of batches for
+%             breaking down the simulation. Note that nsim/Y must be a
+%             positive integer!
 %  pool_num:  number of GPUs used for parallizing, must be greater than 1
 %             to enable. (Default is 1)
 %
@@ -117,7 +119,84 @@ if Y(1) == 1 || length(size(Y)) == length([dim n nsim])
     covRate_linbdry_new  = CovRateLvlSets( delta, hatdelta, thresh_linbdry,  c, 1 );
     covRate_erodbdry_new = CovRateLvlSets( delta, hatdelta, thresh_erodbdry, c, 1 );
     toc
-end
+else
+    %%% Set Y to be the batchnumber
+    batchnumber = Y;
+    %%% Check whether batch number divides nsim
+    if( mod(nsim,batchnumber)~=0 )
+        error("Choose the batch number such that nsim/batchnumber is an integer!")
+    end
+    %%% Initialize the covering rates
+    covRate_truebdry = 0;
+    covRate_linbdry  = 0;
+    covRate_erodbdry = 0;
+    covRate_truebdry_new = 0;
+    covRate_linbdry_new  = 0;
+    covRate_erodbdry_new = 0;
+    
+    %%% Loop over simulations/batch number
+    for nn = 1:(nsim/batchnumber)
+        %%%%%% Set the batch range
+        batchrange = (batchnumber*(nn-1)+1):nn*batchnumber;
+        %%%%%% Simulate a small batch of simulations
+        [Y, delta] = generateProcess( n, batchnumber, paramNoise.FWHM, paramNoise.dim,...
+                                      paramNoise.noise, paramNoise.nu, paramNoise.kernel,...
+                                      paramNoise.bin, paramSignal.shape, paramSignal.shapeparam,...
+                                      paramSignal.type, paramNoise.sd, pool_num, 0 );
+    %%%%%% Compute the quantiles and threshold fields for the small
+        %%%%%% batch
+        switch( paramSignal.type )
+            case 'signal'
+                % counts the iteration of the next loop
+                count = 0;
+                for k = batchrange
+                    count = count+1;
+                    % Obtain quantile estimate    
+                    [thresh_truebdry(index1{:},k,:), a_truebdry(:,k), ~, ~]...
+                            = CopeSets( Y(index1{:},count), c, lvls, quantEstim, 'true', 1, 1, delta );
+                    [thresh_linbdry(index1{:},k,:), a_linbdry(:,k), ~, ~]...
+                            = CopeSets( Y(index1{:},count), c, lvls, quantEstim, 'linear' );
+                    [thresh_erodbdry(index1{:},k,:), a_erodbdry(:,k), hatdelta(index{:},k), hatsigma(index{:},k)]...
+                            = CopeSets( Y(index1{:},count), c, lvls, quantEstim, 'erodilation' );
+                end
+            case 'SNR'
+                % counts the iteration of the next loop
+                count = 0;
+                for k = batchrange
+                    count = count+1;
+                    % Obtain quantile estimate    
+                    [thresh_truebdry(index1{:},k,:), a_truebdry(:,k), ~, ~]...
+                            = CopeSets_SNR( Y(index1{:},count), c, lvls, 5e3, 'true', 't', delta );
+                    [thresh_linbdry(index1{:},k,:), a_linbdry(:,k), ~, ~]...
+                            = CopeSets_SNR( Y(index1{:},count), c, lvls, 5e3, 'linear', 't' );
+                    [thresh_erodbdry(index1{:},k,:), a_erodbdry(:,k), hatdelta(index{:},k), hatsigma(index{:},k)]...
+                            = CopeSets_SNR( Y(index1{:},count), c, lvls, 5e3, 'erodilation', 't' );
+
+                end
+        end % switch cases
+        %%%%%% Compute the covering rate for the batch
+        covRate_truebdry     = covRate_truebdry + CovRateLvlSets( delta, hatdelta(index{:},batchrange),...
+                                               thresh_truebdry(index1{:},batchrange,:), c, 0 );
+        covRate_linbdry      = covRate_linbdry + CovRateLvlSets( delta, hatdelta(index{:},batchrange),...
+                                               thresh_linbdry(index1{:},batchrange,:),  c, 0 );
+        covRate_erodbdry     = covRate_erodbdry + CovRateLvlSets( delta, hatdelta(index{:},batchrange),...
+                                               thresh_erodbdry(index1{:},batchrange,:), c, 0 );
+        covRate_truebdry_new = covRate_truebdry_new + CovRateLvlSets( delta, hatdelta(index{:},batchrange),...
+                                               thresh_truebdry(index1{:},batchrange,:), c, 1 );
+        covRate_linbdry_new  = covRate_linbdry_new + CovRateLvlSets( delta, hatdelta(index{:},batchrange),...
+                                               thresh_linbdry(index1{:},batchrange,:),  c, 1 );
+        covRate_erodbdry_new =  covRate_erodbdry_new + CovRateLvlSets( delta, hatdelta(index{:},batchrange),...
+                                               thresh_erodbdry(index1{:},batchrange,:), c, 1 );
+    end % loop over batches
+    %%%%%% make the covering rates an average since they were simply added
+    %%%%%% in the loop over the batches
+    covRate_truebdry = covRate_truebdry / (nsim/batchnumber);
+    covRate_linbdry  = covRate_linbdry / (nsim/batchnumber);
+    covRate_erodbdry = covRate_erodbdry / (nsim/batchnumber);
+    covRate_truebdry_new = covRate_truebdry_new / (nsim/batchnumber);
+    covRate_linbdry_new  = covRate_linbdry_new / (nsim/batchnumber);
+    covRate_erodbdry_new = covRate_erodbdry_new / (nsim/batchnumber);
+end % end precomputed versus batch simulation if/ele statement
 
 %%%%%%% report the results of the simulation
 % save the covering rate results
