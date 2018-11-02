@@ -330,12 +330,12 @@ end % end loop over the smoothing parameter
 save('simulations/ResultSim10050regNsim3000maxN240_isotropic_FWHM.mat', ...
                 'sim10050regResults', '-v7.3')
 
-%% %%%%%%%%%%% 100x50 domain simulation
+%% %%%%%%%%%%% 500x50 domain simulation
 %%%%%% simulation paramters
 clear all
 close all
 % Sample size and simulation size
-nvec = [30 60 120 240]% 300];
+nvec = [30 60 120 240];% 300];
 % Considered confidence levels
 lvls = [0.85 0.90 0.95];
 % threshold for the simulation
@@ -348,14 +348,14 @@ quantEstim = struct('name', "MultiplierBootstrap",...
                                              'weights', "gaussian",...   
                                              'method', 't')...
                                                 );
-nsim = 2e3;%3e3;
-dim  = [200 50];
+nsim = 3e3;
+dim  = [500 50];
 FWHM = [5 10];
 a    = [[1 3]; [0 5]];
-batchnumber = 50;
+batchnumber = 20;
 
 % define cell array to store the results of the simulations
-sim20050tResults = cell(length(FWHM), size(a,2), length(nvec));
+sim50050tResults = cell(length(FWHM), size(a,2), length(nvec));
 
 %%%%%% simulations of covering rates
 % loop over the smoothing parameter
@@ -383,19 +383,19 @@ for f = FWHM
         for n = nvec
             countn = countn+1;
             tic
-            sim20050tResults{countf, counta, countn} = CopeSets_sim( nsim, n, lvls, paramSignal, c,...
+            sim50050tResults{countf, counta, countn} = CopeSets_sim( nsim, n, lvls, paramSignal, c,...
                                         paramNoise, quantEstim, batchnumber, pool_num );
             toc
         end % end loop over sample size
         toc
-        save('simulations/ResultSim20050tNsim3000maxN240_isotropic_FWHM.mat', ...
-             'sim20050tResults', '-v7.3')
+        save('simulations/ResultSim50050tNsim3000maxN240_isotropic_FWHM.mat', ...
+             'sim50050tResults', '-v7.3')
     end % end loop over slope of the ramp
 end % end loop over the smoothing parameter
 
 %%%% save final results
-save('simulations/ResultSim20050tNsim3000maxN240_isotropic_FWHM.mat', ...
-                'sim20050tResults', '-v7.3')
+save('simulations/ResultSim50050tNsim3000maxN240_isotropic_FWHM.mat', ...
+                'sim50050tResults', '-v7.3')
     
             
 %%%%%%%%%%% 100x50 domain simulation quantile estim regular multiplier
@@ -404,7 +404,7 @@ save('simulations/ResultSim20050tNsim3000maxN240_isotropic_FWHM.mat', ...
 clear all
 close all
 % Sample size and simulation size
-nvec = [30 60 120 240 300];
+nvec = [30 60 120 240];
 % Considered confidence levels
 lvls = [0.85 0.90 0.95];
 % threshold for the simulation
@@ -418,13 +418,13 @@ quantEstim = struct('name', "MultiplierBootstrap",...
                                              'method', 'regular')...
                                                 );
 nsim = 3e3;
-dim  = [200 50];
+dim  = [500 50];
 FWHM = [5 10];
 a    = [[1 3]; [0 5]];
 batchnumber = 50;
 
 % define cell array to store the results of the simulations
-sim20050regResults = cell(length(FWHM), size(a,2), length(nvec));
+sim50050regResults = cell(length(FWHM), size(a,2), length(nvec));
 
 %%%%%% simulations of covering rates
 % loop over the smoothing parameter
@@ -451,15 +451,15 @@ for f = FWHM
         tic
         for n = nvec
             countn = countn+1;
-            sim20050regResults{countf, counta, countn} = CopeSets_sim( nsim, n, lvls, paramSignal, c,...
+            sim50050regResults{countf, counta, countn} = CopeSets_sim( nsim, n, lvls, paramSignal, c,...
                                         paramNoise, quantEstim, batchnumber, pool_num );    
         end % end loop over sample size
         toc
-        save('simulations/ResultSim20050regNsim3000maxN240_isotropic_FWHM.mat', ...
-             'sim20050regResults', '-v7.3')
+        save('simulations/ResultSim30050regNsim3000maxN240_isotropic_FWHM.mat', ...
+             'sim30050regResults', '-v7.3')
     end % end loop over slope of the ramp
 end % end loop over the smoothing parameter
 
 %%%% save final results
-save('simulations/ResultSim20050regNsim3000maxN240_isotropic_FWHM.mat', ...
-                'sim20050regResults', '-v7.3')
+save('simulations/ResultSim30050regNsim3000maxN240_isotropic_FWHM.mat', ...
+                'sim30050regResults', '-v7.3')
