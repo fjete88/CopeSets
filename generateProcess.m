@@ -59,12 +59,12 @@ if size(SIGNAL_SD) ~= dim
 end
 
 %%%%% Generate noise fields and change its variance according to SIGNAL_SD
-if Y(1) == 1 || length(size(Y)) == 2
+if length(size(Y)) == 2
     if D == 2
-        Y = SmoothField2D( n*nsim, 1, FWHM, dim, noise, nu,...
+        Y = SmoothField2D( n, nsim, FWHM, dim, noise, nu,...
                                         kernel, bin, pool_num ) .* SIGNAL_SD;
     elseif D == 3
-        Y = SmoothField3D( n*nsim, 1, FWHM, dim, noise, nu,...
+        Y = SmoothField3D( n, nsim, FWHM, dim, noise, nu,...
                                         kernel, bin, pool_num ) .* SIGNAL_SD;
     else
         error('Currently, only fields up to 3D domain are supported!')
