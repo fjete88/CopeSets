@@ -107,6 +107,11 @@ for l = lvls
     % set the range for the axis
     xlim([nVec(1)-5, nVec(end)+5])
     ylim([lvls(countl)-0.05 lvls(countl) + 0.05])
+    % specify tiks
+    xticks( nVec )
+    % put label onto the axis
+    xlabel('Sample Size [N]');
+    ylabel('emp. Covering Rate')
     % Add title
     title(titlename)
     % Add a legend
