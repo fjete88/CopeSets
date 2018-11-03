@@ -1,57 +1,59 @@
-function[] = PlotResults( result, location, type, titlename, stdfac, colorVec, dotVec)
+function[] = PlotResults( result, location, type, titlename, linbdryCov, ylimType, stdfac, colorVec, dotVec)
 % Plots results from a simulation and outputs figures for the different lvls.
 % Input:
-%  F:    random field over a domain in R^D, it is an (D+1)-dimensional array,
-%        where the last dimension enumerates the samples
-%  c:    threshold for excursions
-%  lvls:       vector containing the required confidence levels. Must be
-%              between 0 and 1.
-%  quantEstim: structure containing the name and the parameters for the
-%              quantile estimation method. Choices:
-%               {
-%                quantEstim.name = 'multiplierbootstrap'
-%                quantEstim.params:
-%                   Mboot:     amount of bootstrap replicates (default=5e3)
-%                   method:    option for the bootstrap estimator (default='t')
-%               }
-%  bdry_type: currently 'linear' or 'true' are supported
-%  center:    option to center the field using the sample mean (default=1)
-%  normalize: option to normalize the field by sample variance (default=1)
-%  delta:     required, if bdry_type is equal to 'true'. This is the true
-%            population mean function given on a D-dimensional array
+%  result:
+%  location:
+%  type:
+%  titlename:
+%  linbdryCov:
+%  ylimType: 'static', 'variable'
+%  stdfac:
+%  colorVec:
+%  dotVec:
 % Output:
-%  - thresh is the threshold lower and upper for the sample mean in order to
-%    be in the estimated lower and upper excursion sets 
-%  - quantile is the bootstrapped quantile of the maximum distribution of the 
-%    input processes
-%  - hatdelta is the sample mean of the fields
-%  - hatsigma is the sample variance of the fields
 %__________________________________________________________________________
 % References:
 %__________________________________________________________________________
 % Author: Fabian Telschow (ftelschow@ucsd.edu)
-% Last changes: 10/25/2018
+% Last changes: 11/03/2018
 %__________________________________________________________________________
-
 switch nargin
     case 4
-        stdfac   = 1.96;
-        colorVec = 'rbmc';
-        dotVec   = 'xxoo';
+        linbdryCov = 'y';
+        ylimType   = [0.05, 0.05];
+        stdfac     = 1.96;
+        colorVec   = 'rbmc';
+        dotVec     = 'xxoo';
     case 5
-        colorVec = 'rbmc';
-        dotVec   = 'xxoo';
-
+        ylimType   = 'static';
+        stdfac     = 1.96;
+        colorVec   = 'rbmc';
+        dotVec     = 'xxoo';
     case 6
+        stdfac     = 1.96;
+        colorVec   = 'rbmc';
+        dotVec     = 'xxoo';
+    case 7
+        colorVec   = 'rbmc';
+        dotVec     = 'xxoo';
+    case 8
         dotVec   = 'xxoo';
 end
 
 % Set font to latex
 set(groot, 'defaultAxesTickLabelInterpreter','latex'); set(groot, 'defaultLegendInterpreter','latex'); set(gca, 'fontsize', 20);
-
+% Get constants from the results cell structure
 dim    = size(result);
 result = reshape(result, [prod(dim(1:end-1)), dim(end)]);
 dim    = size(result);
+
+% Get the index for the correct covering method. Old (without checking on boundary 'n', new checking along boundary 'y')
+if linbdryCov == 'y'
+    CovIndex = 2;
+else
+    CovIndex = 1;
+end
+
 % initialize FWHMnames
 FWHMnames = [];
 slopenames = [];
@@ -65,30 +67,37 @@ lvls   = result{1,1}.lvls;
 
 % restructure to get matrix with covering rates and with the scaled stdErr
 covRates = zeros([ dim ,length(lvls)] );
-scStdErr = stdfac*result{1,1}.stdErr.rough;
+scStdErr = stdfac*result{1}.stdErr.rough;
 
 for i = 1:dim(1)
     % fill FWHMnames and slopenames
     FWHMnames  = [FWHMnames result{i,1}.paramNoise.FWHM(1)];
-    slope      = result{i,1}.paramSignal.shapeparam
+    slope      = result{i,1}.paramSignal.shapeparam;
     if length(slope)==2
-        slope = diff(slope)
+        slope = diff(slope);
     end
-    slopenames = [slopenames slope]
+    slopenames = [slopenames slope];
     for j = 1:dim(2)
         for l = 1:length(lvls)
             switch type
                 case 'truebdry'
-                     covRates(i,j,l) = result{i,j}.covRate.truebdry(2,l);
+                     covRates(i,j,l) = result{i,j}.covRate.truebdry(CovIndex,l);
                 case 'linbdry'
-                     covRates(i,j,l) = result{i,j}.covRate.linbdry(2,l);
+                     covRates(i,j,l) = result{i,j}.covRate.linbdry(CovIndex,l);
                 case 'erodbdry'
-                     covRates(i,j,l) = result{i,j}.covRate.erodbdry(2,l);    
+                     covRates(i,j,l) = result{i,j}.covRate.erodbdry(CovIndex,l);    
             end
-
         end
     end
 end
+
+dynamiclegend = cell([1 dim(1)+2]);
+for j = 1:dim(1)
+    dynamiclegend{j} = ['FWHM ', num2str(FWHMnames(j)), ' slope ', num2str(slopenames(j))];
+end
+dynamiclegend{dim(1)+1} = 'nominal level';
+dynamiclegend{dim(1)+2} = '1.96 x stdErr';
+
 % initialize counter on the covering levels
 countl = 0;
 for l = lvls
@@ -106,7 +115,12 @@ for l = lvls
     plot([nVec(1)-5, nVec(end)+5], [lvls(countl)+scStdErr(countl) lvls(countl)+scStdErr(countl)], 'k--')
     % set the range for the axis
     xlim([nVec(1)-5, nVec(end)+5])
-    ylim([lvls(countl)-0.05 lvls(countl) + 0.05])
+    if strcmp(ylimType, 'variable')
+        tmp = covRates(:,:,countl);
+        ylim( [max(0,0.95*min(tmp(:))) min(1,1.05*max(tmp(:)))] );
+    else
+        ylim([lvls(countl)-ylimType(1) lvls(countl) + ylimType(2)]);
+    end
     % specify tiks
     xticks( nVec )
     % put label onto the axis
@@ -115,11 +129,8 @@ for l = lvls
     % Add title
     title(titlename)
     % Add a legend
-    legend( ['FWHM ', num2str(FWHMnames(1)), ' slope ', num2str(slopenames(1))],...
-            ['FWHM ', num2str(FWHMnames(2)), ' slope ', num2str(slopenames(2))],...
-            ['FWHM ', num2str(FWHMnames(3)), ' slope ', num2str(slopenames(3))],...
-            ['FWHM ', num2str(FWHMnames(4)), ' slope ', num2str(slopenames(4))],...
-            'nominal level', '1.96 x stdErr', 'Location', 'southeast' );
+    legend( dynamiclegend{:}, 'Location', 'southeast' )
+
     set(gca, 'fontsize', 14);
     axis square;
     hold off
