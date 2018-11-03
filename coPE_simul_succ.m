@@ -7,26 +7,27 @@ clear
 close all
 
 % Set working path
-cd '/Users/maullz/Desktop/CopeSets'
+%cd '/Users/maullz/Desktop/CopeSets'
+% Set working path
+cd '/home/drtea/Research/MatlabPackages/CopeSets'
 
 % Precompute fields y/n
 precomp = 1;
 
 % Sample size and simulation size
 n    = 1e2;
-nsim = 5e2;
+nsim = 1e3;
 
 % Considered confidence levels
 lvls  = [0.85 0.90 0.95];
-lvls  = 1-(1-lvls)*2;
 nlvls = length(lvls);
 
 % Number of GPUs used for parallel computing
 pool_num = 1;
 
 % Error Field parameters
-stddev   = [4, 4, 4];
-dim      = [100, 100, 100];
+stddev   = [4, 4];
+dim      = [50, 50];
 noise    = 'normal'; % 't'; 'uniform'; %
 nu       = '';
 kernel   = 'gauss'; % 'quartic'; %
@@ -35,9 +36,9 @@ D        = length(dim);
 
 % Signal parameters
 SIGNAL_TYPE  = 'signal'; % 'SNR'; %
-SIGNAL_SHAPE = 'sphere';
+SIGNAL_SHAPE = 'linear'; %'circle';
 SIGNAL_SD    = ones(dim);
-param        = [5, 3, 3];
+param        = [1 3];%[5, 3, 3];
 
 % Target SNR or signal strength by CoPe sets
 c = 2;
@@ -71,6 +72,12 @@ thresh_truebdry   = zeros([dim nlvls nsim 2]);
 thresh_estimbdry  = zeros([dim nlvls nsim 2]);
 thresh_estimbdry2 = zeros([dim nlvls nsim 2]);
 
+quantEstim = struct('name', "MultiplierBootstrap",...
+                            'params', struct('Mboot', 5e3,...
+                                             'weights', "gaussian",...   
+                                             'method', 't')...
+                                                );
+
 % Simulation of estimated quantiles
 switch(SIGNAL_TYPE)
     case 'signal'
@@ -78,11 +85,11 @@ switch(SIGNAL_TYPE)
         for k = 1:nsim
             % Obtain quantile estimate    
             [thresh_truebdry(index1{:},k,:), a_truebdry(:,k), ~, ~]...
-                    = CopeSets( Y(index1{:},k), c, lvls, 5e3, 'true', 1, 1, 't', delta );
+                    = CopeSets( Y(index1{:},k), c, lvls, quantEstim, 'true', 1, 1, delta );
             [thresh_estimbdry(index1{:},k,:), a_estimbdry(:,k), ~, ~]...
-                    = CopeSets( Y(index1{:},k), c, lvls, 5e3, 'linear', 1, 1, 't' );
+                    = CopeSets( Y(index1{:},k), c, lvls, quantEstim, 'linear' );
             [thresh_estimbdry2(index1{:},k,:), a_estimbdry2(:,k), hatdelta(index{:},k), hatsigma(index{:},k)]...
-                    = CopeSets( Y(index1{:},k), c, lvls, 5e3, 'erodilation', 1, 1, 't' );
+                    = CopeSets( Y(index1{:},k), c, lvls, quantEstim, 'erodilation' );
         end
         toc
     case 'SNR'
@@ -101,12 +108,17 @@ switch(SIGNAL_TYPE)
 end
 %% % Compute the covering rate
 tic
-[covRate_truebdry]   = CovRateLvlSets( delta, hatdelta, thresh_truebdry, c );
-[covRate_estimbdry]  = CovRateLvlSets( delta, hatdelta, thresh_estimbdry, c );
-[covRate_estimbdry2] = CovRateLvlSets( delta, hatdelta, thresh_estimbdry2, c );
+[covRate_truebdry]   = CovRateLvlSets( delta, hatdelta, thresh_truebdry, c, 0 );
+[covRate_estimbdry]  = CovRateLvlSets( delta, hatdelta, thresh_estimbdry, c, 0 );
+[covRate_estimbdry2] = CovRateLvlSets( delta, hatdelta, thresh_estimbdry2, c, 0 );
+[covRate_truebdry_new]   = CovRateLvlSets( delta, hatdelta, thresh_truebdry, c, 1 );
+[covRate_estimbdry_new]  = CovRateLvlSets( delta, hatdelta, thresh_estimbdry, c, 1 );
+[covRate_estimbdry2_new] = CovRateLvlSets( delta, hatdelta, thresh_estimbdry2, c, 1 );
 toc
+
 %
-[[covRate_truebdry];[covRate_estimbdry];[covRate_estimbdry2]]
+[[covRate_truebdry];[covRate_truebdry_new];[covRate_estimbdry];[covRate_estimbdry_new];...
+    [covRate_estimbdry2];[covRate_estimbdry2_new]]
 
 % %% %%%%%%%%%%%%%%%%%%% Figures %%%%%%%%%%%%%%%%%%%
 % [thresh2, quantiles2, hatdelta2, hatsigma2] = CopeSets( Y(:,:,:,1), c, 1-lvls, 5e3, 'linear', 1, 1 );
