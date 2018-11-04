@@ -11,7 +11,7 @@ close all
 cd  /home/drtea/Research/MatlabPackages/CopeSets
 
 %%%%%%%%%%%%%%%%%%%%%%%%%% Linear Ramp simulations %%%%%%%%%%%%%%%%%%%%%%%%
-%% %%%%%%%%%%% 50x50 domain simulation Gauss
+%% %%%%%%%%%%% 50x50 domain simulation
 %%%%%% simulation paramters
 clear all
 close all

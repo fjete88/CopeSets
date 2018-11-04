@@ -7,6 +7,7 @@ clear all
 close all
 
 cd /home/drtea/Research/MatlabPackages/CopeSets
+mkdir pics
 
 simpathvector = ["simulations/ResultSim50050Nsim3000maxN240isotropic_boot_regulargaussian.mat",...
                  "simulations/ResultSim50050Nsim3000maxN240isotropic_boot_tgaussian.mat",...
