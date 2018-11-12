@@ -22,7 +22,7 @@ simpathvector = ["simulations/ResultSim50050Nsim3000maxN240isotropic_boot_regula
 
 %% Visualize 500x50 simulations Rademacher regular
 % Loop over the simulation results
-for simpath = simpathvector
+for simpath = simpathvector(1)
     % load the simulation results
     load(simpath)
 
