@@ -1,4 +1,4 @@
-function [quantiles] = MultiplierBoots( R, alpha, Mboot, mask, weights, method )
+function [quantiles, bootMax] = MultiplierBoots( R, alpha, Mboot, mask, weights, method )
 
 % Bootstraps alpha-quantiles of the maximum of a random field
 % Input:
@@ -19,6 +19,7 @@ function [quantiles] = MultiplierBoots( R, alpha, Mboot, mask, weights, method )
 % Output:
 %  quantile is the bootstrapped quantile of the maximum distribution of the 
 %  input processes
+%  bootMax the bootstrap distribution of the maximum of the process
 %
 %__________________________________________________________________________
 % References:
@@ -40,11 +41,19 @@ N    = dimR(end) ;
 switch nargin
     case 2
         Mboot     = 5e3;
-        mask      = ones(dimR);
+        if( length(dimR) ==2 )
+           mask   = ones([dimR(1) 1]);
+        else
+           mask   = ones(dimR(1:end-1));
+        end
         weights   = 'gaussian';
         method    = 't';
     case 3
-        mask      = ones(dimR);
+        if( length(dimR) ==2 )
+           mask   = ones([dimR(1) 1]);
+        else
+           mask   = ones(dimR(1:end-1));
+        end
         weights   = 'gaussian';
         method    = 't';
     case 4
