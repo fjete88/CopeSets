@@ -1,4 +1,4 @@
-function [bdryValues] = erodedilateBdryEstim( field, c, delta )
+function [bdryValues, mask] = erodedilateBdryEstim( field, c, delta )
 
 % Erode/dilate values of random field to boundary of an excursion set using
 % 4 -connectivity
