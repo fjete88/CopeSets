@@ -1,0 +1,59 @@
+clear all
+close all
+
+cd /home/drtea/Research/MatlabPackages/CopeSets
+
+%% Concatinate simulations for 500x50 from the simulations done in maxQunatileSimScript.m
+load('simulations/ResultMaxDistSim50050Nsim25000maxDF299isotropicFWHM510_1')
+simResults1 = simResults;
+load('simulations/ResultMaxDistSim50050Nsim25000maxDF299isotropicFWHM510_2')
+
+% merge the two 500x50 simulations
+simResults1{3,1}.nsim = 50000;
+simResults1{3,2}.nsim = 50000;
+simResults1{3,1}.maxDist = [simResults{3,1}.maxDist, simResults1{3,1}.maxDist];
+simResults1{3,2}.maxDist = [simResults{3,2}.maxDist, simResults1{3,2}.maxDist];
+
+simResults = cell(1, 2);
+simResults{1,1} = simResults1{3,1};
+simResults{1,2} = simResults1{3,2};
+
+save('simulations/ResultMaxDistSim50000maxDF299isotropicFWHM510Bdry500', 'simResults')
+
+clear simResults1 simResults
+%% Concatinate simulations for 100x50 from the simulations done in maxQunatileSimScript.m
+load('simulations/ResultMaxDistSim10050Nsim25000maxDF299isotropicFWHM510_1')
+simResults1 = simResults;
+load('simulations/ResultMaxDistSim10050Nsim25000maxDF299isotropicFWHM510_2')
+
+% merge the two 500x50 simulations
+simResults1{1,1}.nsim = 50000;
+simResults1{1,2}.nsim = 50000;
+simResults1{1,1}.maxDist = [simResults{1,1}.maxDist, simResults1{1,1}.maxDist];
+simResults1{1,2}.maxDist = [simResults{1,2}.maxDist, simResults1{1,2}.maxDist];
+
+simResults = cell(1, 2);
+simResults{1,1} = simResults1{1,1};
+simResults{1,2} = simResults1{1,2};
+
+save('simulations/ResultMaxDistSim50000maxDF299isotropicFWHM510Bdry100', 'simResults')
+
+clear simResults1 simResults
+%% Concatinate simulations for 50x50 from the simulations done in maxQunatileSimScript.m
+load('simulations/ResultMaxDistSim5050Nsim25000maxDF299isotropicFWHM510_1')
+simResults1 = simResults;
+load('simulations/ResultMaxDistSim5050Nsim25000maxDF299isotropicFWHM510_2')
+
+% merge the two 500x50 simulations
+simResults1{1,1}.nsim = 50000;
+simResults1{1,2}.nsim = 50000;
+simResults1{1,1}.maxDist = [simResults{1,1}.maxDist, simResults1{1,1}.maxDist];
+simResults1{1,2}.maxDist = [simResults{1,2}.maxDist, simResults1{1,2}.maxDist];
+
+simResults = cell(1, 2);
+simResults{1,1} = simResults1{1,1};
+simResults{1,2} = simResults1{1,2};
+
+save('simulations/ResultMaxDistSim50000maxDF299isotropicFWHM510Bdry50', 'simResults')
+
+clear simResults1 simResults
