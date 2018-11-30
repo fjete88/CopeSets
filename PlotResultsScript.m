@@ -18,9 +18,10 @@ simpathvector = ["simulations/ResultSim50050Nsim3000maxN240isotropic_boot_regula
                  "simulations/ResultSim5050Nsim3000maxN300isotropic_boot_trademacher.mat",...
                  "simulations/ResultSim5050Nsim3000maxN300isotropic_boot_regulargaussian.mat",...
                  "simulations/ResultSim5050Nsim3000maxN300isotropic_boot_tgaussian.mat"];
+             
+simpathvector = "simulations/ResultSim5050Nsim3000maxN300isotropicFWHM35_boot_trademacher.mat"
 
-
-%% Visualize 500x50 simulations Rademacher regular
+%% Visualize simulation results
 % Loop over the simulation results
 for simpath = simpathvector(1)
     % load the simulation results
@@ -30,13 +31,14 @@ for simpath = simpathvector(1)
     dim     = simResults{1}.paramNoise.dim;
     method  = simResults{1}.quantEstim.params.method;
     weights = simResults{1}.quantEstim.params.weights;
+    FWHM    = [simResults{1}.paramNoise.FWHM(1) simResults{2}.paramNoise.FWHM(1)];
 
     % remove spaces in string for the dimension
     tmp = num2str(dim);
     tmp = tmp(find(~isspace(tmp)));
 
     % define path identifier for plots
-    picpathID = strcat( 'pics/', tmp, method, weights );
+    picpathID = strcat( 'pics/', tmp, method, weights,'FWHM', sprintf('%i', FWHM));
 
     % get shortcuts for the method and weights for the title and labels
     if strcmp( method, 'regular' )

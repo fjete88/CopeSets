@@ -26,18 +26,23 @@ c    = 2;
 pool_num = 1;
 nsim = 3e3;
 dim  = [50 50];
-FWHM = [5 10];
-a    = [[1 3]; [0 5]];
+FWHM = [3 5]; %[5 10];
+a    = [[1.5 2.5]; [1.75 2.25]]; % [[1 3];[0 4]]
 % saving working memory by breaking down the simulation in batches of size
 batchnumber = 20;
 
+% Considered quantile estimation parameters
+weightsVec = "rademacher"; %["rademacher", "gaussian"]
+methodVec  = "t"; %["regular", "t"]
+
+
 % define cell array to store the results of the simulations
-simResults = cell(length(FWHM), size(a,2), length(nvec));
+simResults = cell(length(FWHM), size(a,1), length(nvec));
 
 %%%%%% simulations of covering rates
 % loop over bootstrap method
-for weights = "gaussian"%["rademacher", "gaussian"]
-    for method = ["regular", "t"]
+for weights = weightsVec
+    for method = methodVec
         % quantile estimation parameters
         quantEstim = struct('name', 'MultiplierBootstrap',...
                                     'params', struct('Mboot', 5e3,...
@@ -46,7 +51,7 @@ for weights = "gaussian"%["rademacher", "gaussian"]
                                                         );
         % name for the file containing the simulations
         simname = strcat('ResultSim', num2str(dim(1)), num2str(dim(2)), 'Nsim',  num2str(nsim), ...
-                    'maxN', num2str(max(nvec)), 'isotropic_boot_', method, quantEstim.params.weights, '.mat');
+                    'maxN', num2str(max(nvec)), 'isotropicFWM',sprintf('%i', FWHM),'_boot_', method, quantEstim.params.weights, '.mat');
         % loop over the smoothing parameter
         % Initialize counter for filling the results cell structure
         countf = 0;
@@ -55,17 +60,9 @@ for weights = "gaussian"%["rademacher", "gaussian"]
             paramNoise = struct( 'FWHM', [f, f], 'dim', dim, 'noise', "normal", 'nu', '',...
                                  'kernel', "gauss", 'bin', 0, 'sd', ones(dim) );
             % loop over hte slope of the ramp signal
-            counta = 0;
-            for a = [1 4]
-                counta = counta+1;
-                % specify the paramter for the slope of the ramp
-                if a==1
-                    aa = [1 3];
-                else
-                    aa = a;
-                end
+            for counta = 1:size(a,1)
                 % parameters for the linear ramp
-                paramSignal = struct('shape', "linear", 'shapeparam', aa, 'type', "signal");
+                paramSignal = struct('shape', "linear", 'shapeparam', a(counta,:), 'type', "signal");
                 % loop over the sample size
                 countn = 0;
                 for n = nvec
@@ -99,17 +96,21 @@ pool_num = 1;
 nsim = 3e3;
 dim  = [100 50];
 FWHM = [5 10];
-a    = [[1 3]; [0 5]];
+a    = [[1.5 2.5]; [1.75 2.25]]; % [[1 3];[0 4]]
 % saving working memory by breaking down the simulation in batches of size
 batchnumber = 20;
 
+% Considered quantile estimation parameters
+weightsVec = "rademacher"; %["rademacher", "gaussian"]
+methodVec  = "t"; %["regular", "t"]
+
 % define cell array to store the results of the simulations
-simResults = cell(length(FWHM), size(a,2), length(nvec));
+simResults = cell(length(FWHM), size(a,1), length(nvec));
 
 %%%%%% simulations of covering rates
 % loop over bootstrap method
-for weights = "gaussian"%["rademacher", "gaussian"]
-    for method = ["regular", "t"]
+for weights = weightsVec
+    for method = methodVec
         % quantile estimation parameters
         quantEstim = struct('name', 'MultiplierBootstrap',...
                                     'params', struct('Mboot', 5e3,...
@@ -118,7 +119,7 @@ for weights = "gaussian"%["rademacher", "gaussian"]
                                                         );
         % name for the file containing the simulations
         simname = strcat('ResultSim', num2str(dim(1)), num2str(dim(2)), 'Nsim',  num2str(nsim), ...
-                    'maxN', num2str(max(nvec)), 'isotropic_boot_', method, quantEstim.params.weights, '.mat');
+                    'maxN', num2str(max(nvec)), 'isotropicFWM',sprintf('%i', FWHM),'_boot_', method, quantEstim.params.weights, '.mat');
         % loop over the smoothing parameter
         % Initialize counter for filling the results cell structure
         countf = 0;
@@ -127,17 +128,10 @@ for weights = "gaussian"%["rademacher", "gaussian"]
             paramNoise = struct( 'FWHM', [f, f], 'dim', dim, 'noise', "normal", 'nu', '',...
                                  'kernel', "gauss", 'bin', 0, 'sd', ones(dim) );
             % loop over hte slope of the ramp signal
-            counta = 0;
-            for a = [1 4]
-                counta = counta+1;
-                % specify the paramter for the slope of the ramp
-                if a==1
-                    aa = [1 3];
-                else
-                    aa = a;
-                end
+            for counta = 1:size(a,1)
                 % parameters for the linear ramp
-                paramSignal = struct('shape', "linear", 'shapeparam', aa, 'type', "signal");
+                paramSignal = struct( 'shape', "linear", 'shapeparam', a(counta,:),...
+                                      'type', "signal");
                 % loop over the sample size
                 countn = 0;
                 for n = nvec
@@ -171,17 +165,21 @@ pool_num = 1;
 nsim = 3e3;
 dim  = [500 50];
 FWHM = [5 10];
-a    = [[1 3]; [0 5]];
+a    = [[1.5 2.5]; [1.75 2.25]]; % [[1 3];[0 4]]
 % saving working memory by breaking down the simulation in batches of size
 batchnumber = 20;
 
+% Considered quantile estimation parameters
+weightsVec = "rademacher"; %["rademacher", "gaussian"]
+methodVec  = "t"; %["regular", "t"]
+
 % define cell array to store the results of the simulations
-simResults = cell(length(FWHM), size(a,2), length(nvec));
+simResults = cell(length(FWHM), size(a,1), length(nvec));
 
 %%%%%% simulations of covering rates
 % loop over bootstrap method 
-for weights = "gaussian"%["rademacher", "gaussian"]
-    for method = ["regular", "t"]
+for weights = weightsVec
+    for method = methodVec
         % quantile estimation parameters
         quantEstim = struct('name', 'MultiplierBootstrap',...
                                     'params', struct('Mboot', 5e3,...
@@ -190,7 +188,7 @@ for weights = "gaussian"%["rademacher", "gaussian"]
                                                         );
         % name for the file containing the simulations
         simname = strcat('ResultSim', num2str(dim(1)), num2str(dim(2)), 'Nsim',  num2str(nsim), ...
-                    'maxN', num2str(max(nvec)), 'isotropic_boot_', method, quantEstim.params.weights, '.mat');
+                    'maxN', num2str(max(nvec)), 'isotropicFWM',sprintf('%i', FWHM),'_boot_', method, quantEstim.params.weights, '.mat');
         % loop over the smoothing parameter
         % Initialize counter for filling the results cell structure
         countf = 0;
@@ -199,17 +197,10 @@ for weights = "gaussian"%["rademacher", "gaussian"]
             paramNoise = struct( 'FWHM', [f, f], 'dim', dim, 'noise', "normal", 'nu', '',...
                                  'kernel', "gauss", 'bin', 0, 'sd', ones(dim) );
             % loop over hte slope of the ramp signal
-            counta = 0;
-            for a = [1 4]
-                counta = counta+1;
-                % specify the paramter for the slope of the ramp
-                if a==1
-                    aa = [1 3];
-                else
-                    aa = a;
-                end
+            for counta = 1:size(a,1)
                 % parameters for the linear ramp
-                paramSignal = struct('shape', "linear", 'shapeparam', aa, 'type', "signal");
+                paramSignal = struct( 'shape', "linear", 'shapeparam', a(counta,:),...
+                                      'type', "signal");
                 % loop over the sample size
                 countn = 0;
                 for n = nvec

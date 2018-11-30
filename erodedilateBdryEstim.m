@@ -32,7 +32,7 @@ if sum(delta(:))==666
     % Compute the excursion set estimated from the sample mean
     A_c = ( mean(field, length(sf))  >= c);   
 else
-    % Compute the excursion set estimated from the sample mean
+    % Compute the excursion set estimated from the provided signal
     A_c = ( delta  >= c);   
 end
 
