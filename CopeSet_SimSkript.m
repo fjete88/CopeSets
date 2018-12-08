@@ -10,6 +10,8 @@ close all
 
 %%%%%% set path for the files
 cd  /home/drtea/Research/MatlabPackages/CopeSets
+[base, ~, ~] = fileparts(mfilename('fullpath'));
+cd base;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%% Linear Ramp simulations %%%%%%%%%%%%%%%%%%%%%%%%
 %% %%%%%%%%%%% 50x50 domain simulation
@@ -26,8 +28,8 @@ c    = 2;
 pool_num = 1;
 nsim = 3e3;
 dim  = [50 50];
-FWHM = [3 5]; %[5 10];
-a    = [[1.5 2.5]; [1.75 2.25]]; % [[1 3];[0 4]]
+FWHM = 10; %[3 5]; %[5 10];
+a    = [[1.5 2.5]; [0 4]; [-1 5]; [-2 6]]; % [[1 3];[0 4]]
 % saving working memory by breaking down the simulation in batches of size
 batchnumber = 20;
 
@@ -39,7 +41,7 @@ methodVec  = "t"; %["regular", "t"]
 % define cell array to store the results of the simulations
 simResults = cell(length(FWHM), size(a,1), length(nvec));
 
-%%%%%% simulations of covering rates
+%% %%%%%% simulations of covering rates
 % loop over bootstrap method
 for weights = weightsVec
     for method = methodVec
@@ -51,7 +53,7 @@ for weights = weightsVec
                                                         );
         % name for the file containing the simulations
         simname = strcat('ResultSim', num2str(dim(1)), num2str(dim(2)), 'Nsim',  num2str(nsim), ...
-                    'maxN', num2str(max(nvec)), 'isotropicFWM',sprintf('%i', FWHM),'_boot_', method, quantEstim.params.weights, '.mat');
+                    'maxN', num2str(max(nvec)), 'isotropicFWM',sprintf('%i_', FWHM), 'slopes',sprintf('%i_', diff(a')),'_boot_', method, quantEstim.params.weights, '.mat');
         % loop over the smoothing parameter
         % Initialize counter for filling the results cell structure
         countf = 0;

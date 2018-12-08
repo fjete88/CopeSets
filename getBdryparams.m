@@ -18,7 +18,7 @@ function [bdry_params] = getBdryparams(field, c)
 %__________________________________________________________________________
 % References:
 %__________________________________________________________________________
-% Author: Alex Bowring (alex.bowring@bdi.ox.ac.uk)
+% Author: Alex Bowring (alex.bowring@bdi.ox.ac.uk), Fabian Telschow
 % Last changes: 10/25/2018
 %__________________________________________________________________________
 

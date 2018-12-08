@@ -1,4 +1,4 @@
-function [thresh, quantiles, hatdelta, hatsigma] = CopeSets( F, c, lvls, quantEstim,...
+function [thresh, quantiles, hatdelta, hatsigma, len_bdry] = CopeSets( F, c, lvls, quantEstim,...
                                                         bdry_type, center, normalize, delta )
 % Computes CoPe all ingredients for CoPe sets.
 % Input:
@@ -31,7 +31,7 @@ function [thresh, quantiles, hatdelta, hatsigma] = CopeSets( F, c, lvls, quantEs
 % References:
 %__________________________________________________________________________
 % Author: Fabian Telschow (ftelschow@ucsd.edu)
-% Last changes: 10/25/2018
+% Last changes: 11/30/2018
 %__________________________________________________________________________
 %%%%%% Check user specified input
 if any(lvls >=1) || any(lvls<=0)
@@ -43,7 +43,7 @@ switch nargin
     case 3
         quantEstim = struct('name', "MultiplierBootstrap",...
                             'params', struct('Mboot', 5e3,...
-                                             'weights', "gaussian",...   
+                                             'weights', "rademacher",...   
                                              'method', 't')...
                                                 );
         bdry_type = 'linear';
@@ -81,7 +81,7 @@ end
 %%%% Compute the process on the boundary and its mask
 switch(bdry_type)
     case 'linear'
-        F_bdry = linBdryEstim( F, c );
+        F_bdry = linBdryEstim( F, c, hatdelta );
         mask   = ones([size(F_bdry,1) 1] );
     case 'erodilation'
         F_bdry = erodedilateBdryEstim( F, c, delta );
@@ -90,6 +90,9 @@ switch(bdry_type)
         F_bdry = linBdryEstim( F, c, delta );
         mask   = ones([size(F_bdry,1) 1] );
 end
+
+%%%% Compute length of estimated boundary
+len_bdry = sum(mask);
 
 %%%% convert F_bdry to residuals if neccessary
 % Center/normalize, if required

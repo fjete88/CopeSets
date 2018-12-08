@@ -65,6 +65,10 @@ index1 = repmat( {':'}, 1, D+1 );
 a_truebdry       = zeros(nlvls,nsim);
 a_linbdry        = zeros(nlvls,nsim);
 a_erodbdry       = zeros(nlvls,nsim);
+% Initialize vector for estimated boundary lengths
+len_truebdry     = zeros([1 nsim]);
+len_linbdry      = zeros([1 nsim]);
+len_erodbdry     = zeros([1 nsim]);
 
 if Y(1) == 1 || length(size(Y)) == length([dim n nsim])
     % Initialize fields to save the thresholds and estimators
@@ -86,11 +90,11 @@ if Y(1) == 1 || length(size(Y)) == length([dim n nsim])
             tic
             for k = 1:nsim
                 % Obtain quantile estimate    
-                [thresh_truebdry(index1{:},k,:), a_truebdry(:,k), ~, ~]...
+                [thresh_truebdry(index1{:},k,:), a_truebdry(:,k), ~, ~,len_truebdry(k)]...
                         = CopeSets( Y(index1{:},k), c, lvls, quantEstim, 'true', 1, 1, delta );
-                [thresh_linbdry(index1{:},k,:), a_linbdry(:,k), ~, ~]...
+                [thresh_linbdry(index1{:},k,:), a_linbdry(:,k), ~, ~, len_linbdry(k)]...
                         = CopeSets( Y(index1{:},k), c, lvls, quantEstim, 'linear' );
-                [thresh_erodbdry(index1{:},k,:), a_erodbdry(:,k), hatdelta(index{:},k), ~]...
+                [thresh_erodbdry(index1{:},k,:), a_erodbdry(:,k), hatdelta(index{:},k), ~, len_erodbdry(k)]...
                         = CopeSets( Y(index1{:},k), c, lvls, quantEstim, 'erodilation' );
             end
             toc
