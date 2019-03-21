@@ -7,7 +7,7 @@
 cd ..
 
 # Loop over parallelisations
-for parallel_count in {1..14}
+for parallel_count in {1..16}
 do
     matlab -nodesktop -nosplash -r "Sim_EstimCopeQuantiles('$parallel_count'); exit" &
 done
