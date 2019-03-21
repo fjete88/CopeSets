@@ -22,7 +22,7 @@ D = length(size(F))-1;
 
 %%%% Compute mean curve and variance
 hatdelta = mean( F, D+1 ); 
-hatsigma = std( F, 0, D+1 );
+hatsigma = std( F, 1, D+1 );
 
 %%%% Compute the estimated SNR
 SNR      = hatdelta ./ hatsigma;
@@ -30,7 +30,5 @@ SNR      = hatdelta ./ hatsigma;
 asymptSD = sqrt(1+SNR.^2/2 );
 
 %%%% Compute the residuals (R2016>)
-residuals = ( (F-hatdelta)./ hatsigma - SNR/2.*(((F-hatdelta)./hatsigma).^2-1) )...
-                ./ asymptSD;
+residuals = ( (F-hatdelta)./ hatsigma - SNR/2.*(((F-hatdelta)./hatsigma).^2-1) );
 end
-
