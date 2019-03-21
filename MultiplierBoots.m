@@ -46,7 +46,7 @@ switch nargin
         else
            mask   = ones(dimR(1:end-1));
         end
-        weights   = 'gaussian';
+        weights   = 'rademacher';
         method    = 't';
     case 3
         if( length(dimR) ==2 )
@@ -54,10 +54,10 @@ switch nargin
         else
            mask   = ones(dimR(1:end-1));
         end
-        weights   = 'gaussian';
+        weights   = 'rademacher';
         method    = 't';
     case 4
-        weights   = 'gaussian';
+        weights   = 'rademacher';
         method    = 't';
     case 5
         method    = 't';
@@ -95,4 +95,11 @@ end
 bootMax = max(abs( sqrt(N)*bootMeans./bootSigma ));
 
 %%%%%% compute quantiles from the bootstrapp distribution of maximum
-quantiles = quantile( bootMax, alpha );
+quantiles     = quantile( bootMax, alpha/2 );
+
+% bootMax          = max(sqrt(N)*bootMeans./bootSigma);
+% quantilesAsym    = [-666 -666];
+% quantilesAsym(1) = quantile( bootMax, alpha );
+% bootMax          = min(sqrt(N)*bootMeans./bootSigma);
+% quantilesAsym(2) = quantile( bootMax, 1-alpha );
+
