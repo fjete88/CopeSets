@@ -22,7 +22,7 @@ function [] = Sim_EstimCopeQuantiles( outpostfix, msim, Nsubj, Lvec, FWHM, SNR, 
 % Last changes: 03/21/2019
 %__________________________________________________________________________
 %%%%% Fill default parameters
-if ~exist('msim', 'var'), msim = 65; end
+if ~exist('msim', 'var'), msim = 63; end
 if ~exist('Nsubj', 'var'), Nsubj = [30 60 120]; end
 if ~exist('Lvec', 'var'), Lvec = [10 60 124]; end
 if ~exist('FWHM', 'var'), FWHM = 3; end
