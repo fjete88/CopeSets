@@ -67,8 +67,8 @@ for f = FWHM
 
 
                 for L = Lvec
-                    countL = find(L==Lvec);
-                    mask = ones([L L]);
+                    countL     = find(L==Lvec);
+                    mask       = ones([L L]);
                     SNRresYcnL = SNRresYcn(1:L,1:L,:);
                     SNRVarL    = SNRVar(1:L,1:L,:);
                     CohenVarL  = CohenVar(1:L,1:L,:);
