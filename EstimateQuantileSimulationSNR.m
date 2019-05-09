@@ -8,6 +8,10 @@
 clear
 close all
 
+printBool    = 0;
+trueSimBool  = 1;
+estimSimBool = 0;
+
 %%%%%% set path for the files
 %cd  /home/drtea/Research/MatlabPackages/CopeSets
 
@@ -27,6 +31,7 @@ SNR = [0.2 0.7 2];
 % quantile levels
 lvls = [0.85 0.9 0.95];
 %% % for loop generating the distribution of the maximum along the boundary of Cope sets
+if(trueSimBool)
 % Initialize array to save the results of the simulation
 maxDistr = zeros([msim length(SNR) length(Lvec) length(nsubj) 3]);
 
@@ -41,28 +46,49 @@ for f = FWHM
             for n = nsubj
                 countn   = find(n==nsubj);
                 biasfac  = (n-1)/sqrt(2*n)*gamma((n-2)/2)/gamma((n-1)/2);
+
+                % true variance at d=c derived from the variance of
+                % non-central t
+                if n < 300
+                    fac = (n-1)/2*(gamma((n-2)/2)/gamma((n-1)/2))^2;
+                else
+                    fac = ( 1 - (3/(4*(n-1)-1)) )^-2;
+                end
+                trueStd  = sqrt( (n-1)/n * ( (n-1)/(n-3)*(1+n*c^2) - ...
+                                              n*c^2 * fac ) );
+                % get constants for variance stabilisation
+                alpha = 1/sqrt( 2*gamma((n-1)/2)^2/gamma((n-2)/2)^2/(n-2) - 1 ) / sqrt(n);
+                beta  = 1/alpha/sqrt( (n-1)/(n-3) ) * sqrt(n);
+                
                 
                 % Get the SNR residuals
-                [SNRresYcn, etaYcn, CohenVar] = SNR_residuals( Yc(:,:,1:n) );
+                [SNRresYcn, etaYcn, CohenStd] = SNR_residuals( Yc(:,:,1:n) );
                 
                 for L = Lvec
                     countL = find(L==Lvec);
                     % asymptotic variance of cohen's d
-                    asymVar  = sqrt( 1 + c^2/2 );
-                    % true variance at d=c derived from the variance of
-                    % non-central t
-                    trueVar  = sqrt( (n-1)/n * ( (n-1)/(n-3)*(1+n*c^2) - ...
-                                                 (n^2-n)/2*c^2* (gamma((n-2)/2)/gamma((n-1)/2))^2 ) );
+                    asymStd  = sqrt( 1 + c^2/2 );
                     % empirical variance of the SNR residuals
-                    SNRVar   = std(SNRresYcn(1:L,1:L,:), 0, 3);
+                    SNRStd   = std(SNRresYcn(1:L,1:L,:), 0, 3);
                     
-                    % Cope set processes
+                    % Different possibilities of true Cope set processes
                     % Note that we need to include the biasfac to make the
                     % process mean zero!
-                    maxDistr( m, countc, countL, countn, 1 ) = max(max(abs( sqrt(n)*(etaYcn(1:L,1:L,:) - c*biasfac) ./ trueVar  )));
-                    maxDistr( m, countc, countL, countn, 2 ) = max(max(abs( sqrt(n)*(etaYcn(1:L,1:L,:) - c*biasfac) ./ asymVar  )));
-                    maxDistr( m, countc, countL, countn, 3 ) = max(max(abs( sqrt(n)*(etaYcn(1:L,1:L,:) - c*biasfac) ./ CohenVar(1:L,1:L,:) )));
-                    maxDistr( m, countc, countL, countn, 4 ) = max(max(abs( sqrt(n)*(etaYcn(1:L,1:L,:) - c*biasfac) ./ SNRVar   )));
+                    % normalizing by true known variance on the ^d=c if the
+                    % data is Gaussian
+                    maxDistr( m, countc, countL, countn, 1 ) = max(max(abs( sqrt(n)*(etaYcn(1:L,1:L,:) - c*biasfac) ./ trueStd  )));
+                    % asymptotic variance on the contour line d=c
+                    maxDistr( m, countc, countL, countn, 2 ) = max(max(abs( sqrt(n)*(etaYcn(1:L,1:L,:) - c*biasfac) ./ asymStd  )));
+                    % estimated asymptotic variance on contour line d=c
+                    maxDistr( m, countc, countL, countn, 3 ) = max(max(abs( sqrt(n)*(etaYcn(1:L,1:L,:) - c*biasfac) ./ CohenStd(1:L,1:L,:) )));
+                    % Estimated empirical variance of the process from SNR
+                    % residuals
+                    maxDistr( m, countc, countL, countn, 4 ) = max(max(abs( sqrt(n)*(etaYcn(1:L,1:L,:) - c*biasfac) ./ SNRStd   )));
+                    % variance stabilization with first order mean approximation
+                    maxDistr( m, countc, countL, countn, 5 ) = max(max(abs( sqrt(n)*( alpha*asinh(beta*etaYcn(1:L,1:L,:)) - alpha*asinh(beta*c*biasfac) )   )));
+                    % variance stabilization with second order mean approximation
+                    maxDistr( m, countc, countL, countn, 6 ) = max(max(abs( sqrt(n)*( alpha*asinh(beta*etaYcn(1:L,1:L,:)) ...
+                                                                                      - alpha*asinh(beta*c*biasfac) + alpha*beta^3*c*biasfac/(beta^2*c^2*biasfac^2+1)^(3/2)*trueStd^2 )   )));
                 end
             end
         end
@@ -75,31 +101,11 @@ toc
 
 clear f m L Y Yc Ycn countc countL countn trueAsymVar EstimAsymVar ResVariance etaYcn stdYcn meanYcn SNRresYcn n
 save('simulations/maxDistr_SNRCopeSet_processes')
-
-%% true Quantiles from maximum simulation
-load('simulations/maxDistr_SNRCopeSet_processes')
-
-trueQuantTrue  = zeros([length(lvls) length(SNR) length(Lvec) length(nsubj)]);
-trueQuantCohen = trueQuantTrue;
-trueQuantSNR   = trueQuantTrue;
-
-for f = FWHM
-    for c = SNR
-        countc = find(c==SNR);
-        for n = nsubj
-            countn = find(n==nsubj);
-            for L = Lvec
-                countL = find(L==Lvec);
-                % Get true quantiles
-                trueQuantTrue( :, countc, countL, countn)  = quantile( maxDistr( :, countc, countL, countn, 1 ), lvls );
-                trueQuantCohen( :, countc, countL, countn) = quantile( maxDistr( :, countc, countL, countn, 2 ), lvls );
-                trueQuantSNR( :, countc, countL, countn)   = quantile( maxDistr( :, countc, countL, countn, 3 ), lvls );
-            end
-        end
-    end
 end
 
 %% %%%%%%%%%%%%%%% Bootstrap quantile estimator simulations %%%%%%%%%%%%%%%
+if(estimSimBool)
+    
 Mboot= 2.5e3;
 msim = 1e3;
 mreport = [250 500 750];
@@ -172,6 +178,34 @@ toc
 
 clear f m L Y Yc Ycn countc countL countn trueVar CohenVar SNRVar etaYcn stdYcn meanYcn SNRresYcn n c
 save('simulations/estimQuantile_SNRCopeSet_processes')
+
+end
+%%%%%% Get the summarized simulation results and plot them
+%% true Quantiles from maximum simulation
+if(printBool)
+
+load('simulations/maxDistr_SNRCopeSet_processes')
+
+trueQuantTrue  = zeros([length(lvls) length(SNR) length(Lvec) length(nsubj)]);
+trueQuantCohen = trueQuantTrue;
+trueQuantSNR   = trueQuantTrue;
+
+for f = FWHM
+    for c = SNR
+        countc = find(c==SNR);
+        for n = nsubj
+            countn = find(n==nsubj);
+            for L = Lvec
+                countL = find(L==Lvec);
+                % Get true quantiles
+                trueQuantTrue( :, countc, countL, countn)  = quantile( maxDistr( :, countc, countL, countn, 1 ), lvls );
+                trueQuantCohen( :, countc, countL, countn) = quantile( maxDistr( :, countc, countL, countn, 2 ), lvls );
+                trueQuantSNR( :, countc, countL, countn)   = quantile( maxDistr( :, countc, countL, countn, 3 ), lvls );
+            end
+        end
+    end
+end
+
 
 %% Estimated Quantiles
 load('simulations/estimQuantile_SNRCopeSet_processes')
@@ -347,5 +381,6 @@ for n = Nsubj
         saveas( gcf, [path_pics,'/ResultsQuantileSimulation_VarTrueAsympt_SNR',num2str(c), '_Nsubj',num2str(n), '_Quant',num2str(100*lvls(a)),'.png'] )
         close all
     end
+end
 end
 end
