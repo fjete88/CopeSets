@@ -114,77 +114,8 @@ if(estimSimBool)
     
 Mboot= 2.5e3;
 msim = 1e3;
-mreport = [250 500 750];
 
-% Initialize buckets for the estimated quantiles
-TrueVarMGauss   = zeros([msim length(lvls) length(SNR) length(Lvec) length(nsubj)]);
-TrueVarMRadem   = TrueVarMGauss;
-CohenVarMGauss  = TrueVarMGauss;
-CohenVarMRadem  = TrueVarMGauss;
-CohenVarMtGauss = TrueVarMGauss;
-CohenVarMtRadem = TrueVarMGauss;
-SNRVarMGauss    = TrueVarMGauss;
-SNRVarMRadem    = TrueVarMGauss;
-SNRVarMtGauss   = TrueVarMGauss;
-SNRVarMtRadem   = TrueVarMGauss;
-
-tic
-for f = FWHM
-    for m=1:msim
-        Y = SmoothField2D( max(nsubj), 1, [f f], [max(Lvec) max(Lvec)] );
-        for c = SNR
-            countc = find(c==SNR);
-            % Get the data with mean c, meaning the SNR is also equal c
-            Yc = Y + c;
-            for n = nsubj
-                countn = find(n==nsubj);
-                
-                % Get the subsampled data to subject size
-                Ycn = Yc(:,:,1:n);
-                % Get the SNR residuals and the estimated Cohen's-d
-                % variance
-                [SNRresYcn, ~, CohenVar] = SNR_residuals( Ycn );
-
-                % remove the standardization of SNR residuals
-                trueVar  = sqrt( 1 + c^2/2 );
-                SNRVar   = std(SNRresYcn, 0, 3);
-
-
-                for L = Lvec
-                    countL = find(L==Lvec);
-                    mask = ones([L L]);
-                    SNRresYcnL = SNRresYcn(1:L,1:L,:);
-                    SNRVarL    = SNRVar(1:L,1:L,:);
-                    CohenVarL  = CohenVar(1:L,1:L,:);
-                    
-                    % Cope quantile estimates using different methods
-                    TrueVarMGauss( m, :, countc, countL, countn) = MultiplierBoots( SNRresYcnL ./ trueVar, 2*lvls, Mboot, mask, 'gaussian', 'regular' );
-                    TrueVarMRadem( m, :, countc, countL, countn) = MultiplierBoots( SNRresYcnL ./ trueVar, 2*lvls, Mboot, ones([L L]), 'rademacher', 'regular' );
-
-                    CohenVarMGauss( m, :, countc, countL, countn) = MultiplierBoots( SNRresYcnL ./ CohenVarL, 2*lvls, Mboot, mask, 'gaussian', 'regular' );
-                    CohenVarMRadem( m, :, countc, countL, countn) = MultiplierBoots( SNRresYcnL ./ CohenVarL, 2*lvls, Mboot, mask, 'rademacher', 'regular' );
-
-                    CohenVarMtGauss( m, :, countc, countL, countn) = MultiplierBoots( SNRresYcnL, 2*lvls, Mboot, mask, 'gaussian', 't' );
-                    CohenVarMtRadem( m, :, countc, countL, countn) = MultiplierBoots( SNRresYcnL, 2*lvls, Mboot, mask, 'rademacher', 't' );
-
-                    SNRVarMGauss( m, :, countc, countL, countn) = MultiplierBoots( SNRresYcnL ./ SNRVarL, 2*lvls, Mboot, mask, 'gaussian', 'regular' );
-                    SNRVarMRadem( m, :, countc, countL, countn) = MultiplierBoots( SNRresYcnL ./ SNRVarL, 2*lvls, Mboot, mask, 'rademacher', 'regular' );
-
-                    SNRVarMtGauss( m, :, countc, countL, countn) = MultiplierBoots( SNRresYcnL, 2*lvls, Mboot, mask, 'gaussian', 't' );
-                    SNRVarMtRadem( m, :, countc, countL, countn) = MultiplierBoots( SNRresYcnL, 2*lvls, Mboot, mask, 'rademacher', 't' );
-                end
-            end
-        end
-        if m == mreport(1) || m == mreport(2) || m == mreport(3)
-            m/msim
-        end
-    end
-end
-toc
-
-clear f m L Y Yc Ycn countc countL countn trueVar CohenVar SNRVar etaYcn stdYcn meanYcn SNRresYcn n c
-save('simulations/estimQuantile_SNRCopeSet_processes')
-
+Sim_EstimCopeQuantilesSNR( 'test', msim, nsubj, Lvec, FWHM, SNR, lvls, Mboot)
 end
 %%%%%% Get the summarized simulation results and plot them
 %% true Quantiles from maximum simulation
