@@ -1,4 +1,4 @@
-function [] = Sim_EstimCopeQuantiles( outpostfix, msim, Nsubj, Lvec, FWHM, SNR, lvls, Mboot)
+function [] = Sim_EstimCopeQuantilesSNR( outpostfix, msim, Nsubj, Lvec, FWHM, SNR, lvls, Mboot)
 
 % This function simulates the quantile estimator of the SNR processes and
 % is written to parallize using CPUs
