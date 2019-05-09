@@ -33,7 +33,7 @@ lvls = [0.85 0.9 0.95];
 %% % for loop generating the distribution of the maximum along the boundary of Cope sets
 if(trueSimBool)
 % Initialize array to save the results of the simulation
-maxDistr = zeros([msim length(SNR) length(Lvec) length(nsubj) 3]);
+maxDistr = zeros([msim length(SNR) length(Lvec) length(nsubj) 6]);
 
 tic
 for f = FWHM
@@ -104,6 +104,8 @@ save('simulations/maxDistr_SNRCopeSet_processes')
 end
 
 %% %%%%%%%%%%%%%%% Bootstrap quantile estimator simulations %%%%%%%%%%%%%%%
+% Note that there is also an ssh script for parallel computing in the /scripts
+% folder 
 if(estimSimBool)
     
 Mboot= 2.5e3;
