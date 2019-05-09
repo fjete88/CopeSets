@@ -45,20 +45,24 @@ for f = FWHM
             Yc = Y + c;
             for n = nsubj
                 countn   = find(n==nsubj);
-                biasfac  = (n-1)/sqrt(2*n)*gamma((n-2)/2)/gamma((n-1)/2);
+                % constant which might cause numerical failure
+                if n < 200
+                    fac = sqrt((n-1)/2)*(gamma((n-2)/2)/gamma((n-1)/2));
+                else
+                    fac = 1 / ( 1 - (3/(4*(n-1)-1)) );
+                end
+                % Factor in the bias, i.e. E[^d] = biasfac*d
+                biasfac  = sqrt((n-1)/n) * fac;
 
                 % true variance at d=c derived from the variance of
                 % non-central t
-                if n < 300
-                    fac = (n-1)/2*(gamma((n-2)/2)/gamma((n-1)/2))^2;
-                else
-                    fac = ( 1 - (3/(4*(n-1)-1)) )^-2;
-                end
-                trueStd  = sqrt( (n-1)/n * ( (n-1)/(n-3)*(1+n*c^2) - ...
-                                              n*c^2 * fac ) );
+                trueStd  = sqrt( (n-1)^2/n/(n-3) + ( (n-1)^2/(n-3)-fac^2*(n-1) )*c^2 );
+                
                 % get constants for variance stabilisation
-                alpha = 1/sqrt( 2*gamma((n-1)/2)^2/gamma((n-2)/2)^2/(n-2) - 1 ) / sqrt(n);
-                beta  = 1/alpha/sqrt( (n-1)/(n-3) ) * sqrt(n);
+                a     = (n-1)/n/sqrt(n-3);
+                b     = sqrt( (n-1)/fac^2/(n-3)-1 ) * (n-1)/n;
+                alpha = 1/b/sqrt(n);
+                beta  = b/a;
                 
                 
                 % Get the SNR residuals
@@ -88,7 +92,7 @@ for f = FWHM
                     maxDistr( m, countc, countL, countn, 5 ) = max(max(abs( sqrt(n)*( alpha*asinh(beta*etaYcn(1:L,1:L,:)) - alpha*asinh(beta*c*biasfac) )   )));
                     % variance stabilization with second order mean approximation
                     maxDistr( m, countc, countL, countn, 6 ) = max(max(abs( sqrt(n)*( alpha*asinh(beta*etaYcn(1:L,1:L,:)) ...
-                                                                                      - alpha*asinh(beta*c*biasfac) + alpha*beta^3*c*biasfac/(beta^2*c^2*biasfac^2+1)^(3/2)*trueStd^2 )   )));
+                                                                                      - alpha*asinh(beta*c*biasfac) + b^2*c*biasfac*trueStd^(-1)/2 )  )));
                 end
             end
         end
@@ -100,7 +104,7 @@ end
 toc
 
 clear f m L Y Yc Ycn countc countL countn trueAsymVar EstimAsymVar ResVariance etaYcn stdYcn meanYcn SNRresYcn n
-save('simulations/maxDistr_SNRCopeSet_processes')
+%save('simulations/maxDistr_SNRCopeSet_processes')
 end
 
 %% %%%%%%%%%%%%%%% Bootstrap quantile estimator simulations %%%%%%%%%%%%%%%
