@@ -104,7 +104,7 @@ end
 toc
 
 clear f m L Y Yc Ycn countc countL countn trueAsymVar EstimAsymVar ResVariance etaYcn stdYcn meanYcn SNRresYcn n
-%save('simulations/maxDistr_SNRCopeSet_processes')
+save('simulations/maxDistr_SNRCopeSet_processes')
 end
 
 %% %%%%%%%%%%%%%%% Bootstrap quantile estimator simulations %%%%%%%%%%%%%%%
