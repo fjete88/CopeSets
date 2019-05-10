@@ -19,7 +19,7 @@ function [] = Sim_EstimCopeQuantilesSNR( outpostfix, msim, Nsubj, Lvec, FWHM, SN
 % References:
 %__________________________________________________________________________
 % Author: Fabian Telschow (ftelschow@ucsd.edu)
-% Last changes: 03/21/2019
+% Last changes: 05/10/2019
 %__________________________________________________________________________
 %%%%% Fill default parameters
 if ~exist('msim', 'var'), msim = 125; end
@@ -31,7 +31,6 @@ if ~exist('Mboot', 'var'), Mboot = 5e3; end
 if ~exist('lvls', 'var'), lvls = [0.85, 0.9, 0.95]; end
 
 %% %%%%%%%%%%%%%%% Bootstrap quantile estimator simulations %%%%%%%%%%%%%%%
-
 % Initialize buckets for the estimated quantiles
 TrueStdMGauss   = zeros([msim length(lvls) length(SNR) length(Lvec) length(Nsubj)]);
 TrueStdMRadem   = TrueStdMGauss;
@@ -95,7 +94,7 @@ for f = FWHM
                 SNRStd   = std(SNRresYcn, 0, 3);
                 
                 % stabilising factor for residuals
-                StabSNRres = (alpha*beta / sqrt( beta*etaYcn^2+1 )) .* SNRresYcn;
+                StabSNRres = (alpha*beta ./ sqrt( beta*etaYcn^2+1 )) .* SNRresYcn;
 
                 for L = Lvec
                     countL      = find(L==Lvec);
