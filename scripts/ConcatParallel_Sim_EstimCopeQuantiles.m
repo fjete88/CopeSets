@@ -10,18 +10,31 @@ parallel_count = 16;
 for k = 1:16
     load( strcat('simulations/estimQuantile_SNRCopeSet_processes', num2str(k), '.mat'));
     if k==1
-        TrueStdMGauss_tmp   = TrueStdMGauss;
-        TrueStdMRadem_tmp   = TrueStdMRadem;
-        TrueStdMtGauss_tmp   = TrueStdMtGauss;
-        TrueStdMtRadem_tmp   = TrueStdMtRadem;
+        TrueStdMGauss_tmp  = TrueStdMGauss;
+        TrueStdMRadem_tmp  = TrueStdMRadem;
+        TrueStdMtGauss_tmp = TrueStdMtGauss;
+        TrueStdMtRadem_tmp = TrueStdMtRadem;
+
+        AsymStdMGauss_tmp  = AsymStdMGauss;
+        AsymStdMRadem_tmp  = AsymStdMRadem;
+        AsymStdMtGauss_tmp = AsymStdMtGauss;
+        AsymStdMtRadem_tmp = AsymStdMtRadem;        
+        
         CohenStdMGauss_tmp  = CohenStdMGauss;
         CohenStdMRadem_tmp  = CohenStdMRadem;
         CohenStdMtGauss_tmp = CohenStdMtGauss;
         CohenStdMtRadem_tmp = CohenStdMtRadem;
-        SNRStdMGauss_tmp    = SNRStdMGauss;
-        SNRStdMRadem_tmp    = SNRStdMRadem;
-        SNRStdMtGauss_tmp   = SNRStdMtGauss;
-        SNRStdMtRadem_tmp   = SNRStdMtRadem;        
+        
+        SNRStdMGauss_tmp  = SNRStdMGauss;
+        SNRStdMRadem_tmp  = SNRStdMRadem;
+        SNRStdMtGauss_tmp = SNRStdMtGauss;
+        SNRStdMtRadem_tmp = SNRStdMtRadem;
+        
+
+        StabStdMGauss_tmp  = StabStdMGauss;
+        StabStdMRadem_tmp  = StabStdMRadem;
+        StabStdMtGauss_tmp = StabStdMtGauss;
+        StabStdMtRadem_tmp = StabStdMtRadem;   
     else
         TrueStdMGauss_tmp   = [ TrueStdMGauss_tmp; TrueStdMGauss ];
         TrueStdMRadem_tmp   = [ TrueStdMRadem_tmp; TrueStdMRadem ];
