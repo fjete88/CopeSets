@@ -94,7 +94,7 @@ for f = FWHM
                 SNRStd   = std(SNRresYcn, 0, 3);
                 
                 % stabilising factor for residuals
-                StabSNRres = (alpha*beta ./ sqrt( beta*etaYcn^2+1 )) .* SNRresYcn;
+                StabSNRres = (alpha*beta ./ sqrt( beta^2*etaYcn^2+1 )) .* SNRresYcn;
 
                 for L = Lvec
                     countL      = find(L==Lvec);

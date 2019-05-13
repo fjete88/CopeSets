@@ -8,8 +8,8 @@
 clear
 close all
 
-printBool    = 0;
-trueSimBool  = 1;
+printBool    = 1;
+trueSimBool  = 0;
 estimSimBool = 0;
 
 %%%%%% set path for the files
@@ -126,6 +126,10 @@ load('simulations/maxDistr_SNRCopeSet_processes')
 trueQuantTrue  = zeros([length(lvls) length(SNR) length(Lvec) length(nsubj)]);
 trueQuantCohen = trueQuantTrue;
 trueQuantSNR   = trueQuantTrue;
+trueQuantAsym  = trueQuantTrue;
+trueQuantStab  = trueQuantTrue;
+trueQuantStab2 = trueQuantTrue;
+
 
 for f = FWHM
     for c = SNR
@@ -138,6 +142,9 @@ for f = FWHM
                 trueQuantTrue( :, countc, countL, countn)  = quantile( maxDistr( :, countc, countL, countn, 1 ), lvls );
                 trueQuantCohen( :, countc, countL, countn) = quantile( maxDistr( :, countc, countL, countn, 2 ), lvls );
                 trueQuantSNR( :, countc, countL, countn)   = quantile( maxDistr( :, countc, countL, countn, 3 ), lvls );
+                trueQuantAsym( :, countc, countL, countn)  = quantile( maxDistr( :, countc, countL, countn, 4 ), lvls );
+                trueQuantStab( :, countc, countL, countn)  = quantile( maxDistr( :, countc, countL, countn, 5 ), lvls );
+                trueQuantStab2( :, countc, countL, countn) = quantile( maxDistr( :, countc, countL, countn, 6 ), lvls );
             end
         end
     end
@@ -159,6 +166,18 @@ QuantSNRMtRadem = QuantCohenMGauss;
 
 QuantTrueMGauss  = QuantCohenMGauss;
 QuantTrueMRadem  = QuantCohenMGauss;
+QuantTrueMtGauss = QuantCohenMGauss;
+QuantTrueMtRadem = QuantCohenMGauss;
+
+QuantAsymMGauss  = QuantCohenMGauss;
+QuantAsymMRadem  = QuantCohenMGauss;
+QuantAsymMtGauss = QuantCohenMGauss;
+QuantAsymMtRadem = QuantCohenMGauss;
+
+QuantStabMGauss  = QuantCohenMGauss;
+QuantStabMRadem  = QuantCohenMGauss;
+QuantStabMtGauss = QuantCohenMGauss;
+QuantStabMtRadem = QuantCohenMGauss;
 
 for f = FWHM
     for c = SNR
@@ -169,18 +188,30 @@ for f = FWHM
             for L = Lvec
                 countL = find(L==Lvec);
                 % Get true quantiles
-                QuantTrueMGauss( :, countc, countL, countn)   = mean(TrueVarMGauss( :, :, countc, countL, countn));
-                QuantTrueMRadem( :, countc, countL, countn)   = mean(TrueVarMRadem( :, :, countc, countL, countn));
-
-                QuantSNRMGauss( :, countc, countL, countn)    = mean(SNRVarMGauss( :, :, countc, countL, countn));
-                QuantSNRMRadem( :, countc, countL, countn)    = mean(SNRVarMRadem( :, :, countc, countL, countn));
-                QuantSNRMtGauss( :, countc, countL, countn)   = mean(SNRVarMtGauss( :, :, countc, countL, countn));
-                QuantSNRMtRadem( :, countc, countL, countn)   = mean(SNRVarMtRadem( :, :, countc, countL, countn));       
+                QuantTrueMGauss( :, countc, countL, countn)  = mean(TrueStdMGauss( :, :, countc, countL, countn));
+                QuantTrueMRadem( :, countc, countL, countn)  = mean(TrueStdMRadem( :, :, countc, countL, countn));
+                QuantTrueMtGauss( :, countc, countL, countn) = mean(TrueStdMtGauss( :, :, countc, countL, countn));
+                QuantTrueMtRadem( :, countc, countL, countn) = mean(TrueStdMtRadem( :, :, countc, countL, countn));
                 
-                QuantCohenMGauss( :, countc, countL, countn)  = mean(CohenVarMGauss( :, :, countc, countL, countn));
-                QuantCohenMRadem( :, countc, countL, countn)  = mean(CohenVarMRadem( :, :, countc, countL, countn));
-                QuantCohenMtGauss( :, countc, countL, countn) = mean(CohenVarMtGauss( :, :, countc, countL, countn));
-                QuantCohenMtRadem( :, countc, countL, countn) = mean(CohenVarMtRadem( :, :, countc, countL, countn));  
+                QuantAsymMGauss( :, countc, countL, countn)  = mean(AsymStdMGauss( :, :, countc, countL, countn));
+                QuantAsymMRadem( :, countc, countL, countn)  = mean(AsymStdMRadem( :, :, countc, countL, countn));
+                QuantAsymMtGauss( :, countc, countL, countn) = mean(AsymStdMtGauss( :, :, countc, countL, countn));
+                QuantAsymMtRadem( :, countc, countL, countn) = mean(AsymStdMtRadem( :, :, countc, countL, countn));
+                
+                QuantSNRMGauss( :, countc, countL, countn)   = mean(SNRStdMGauss( :, :, countc, countL, countn));
+                QuantSNRMRadem( :, countc, countL, countn)   = mean(SNRStdMRadem( :, :, countc, countL, countn));
+                QuantSNRMtGauss( :, countc, countL, countn)  = mean(SNRStdMtGauss( :, :, countc, countL, countn));
+                QuantSNRMtRadem( :, countc, countL, countn)  = mean(SNRStdMtRadem( :, :, countc, countL, countn));       
+                
+                QuantCohenMGauss( :, countc, countL, countn)  = mean(CohenStdMGauss( :, :, countc, countL, countn));
+                QuantCohenMRadem( :, countc, countL, countn)  = mean(CohenStdMRadem( :, :, countc, countL, countn));
+                QuantCohenMtGauss( :, countc, countL, countn) = mean(CohenStdMtGauss( :, :, countc, countL, countn));
+                QuantCohenMtRadem( :, countc, countL, countn) = mean(CohenStdMtRadem( :, :, countc, countL, countn));
+                
+                QuantStabMGauss( :, countc, countL, countn)  = mean(StabStdMGauss( :, :, countc, countL, countn));
+                QuantStabMRadem( :, countc, countL, countn)  = mean(StabStdMRadem( :, :, countc, countL, countn));
+                QuantStabMtGauss( :, countc, countL, countn) = mean(StabStdMtGauss( :, :, countc, countL, countn));
+                QuantStabMtRadem( :, countc, countL, countn) = mean(StabStdMtRadem( :, :, countc, countL, countn));
             end
         end
     end
@@ -214,8 +245,7 @@ xtickcell  = {'10', '60', '124'};
 
 set(groot, 'defaultAxesTickLabelInterpreter','latex');
 set(groot, 'defaultLegendInterpreter','latex');
-
-for a = 1:length(lvls)
+for a = 1:3
 for n = Nsubj
     countn = find(n==Nsubj);
     for c = SNR
@@ -251,7 +281,7 @@ for n = Nsubj
         set(h, 'Interpreter', 'latex');
         set(h, 'fontsize', sfont+addf);
 
-        saveas( gcf, [path_pics,'/ResultsQuantileSimulation_VarSNR_SNR',num2str(c), '_Nsubj',num2str(n), '_Quant',num2str(100*lvls(a)),'.png'] )
+        saveas( gcf, [path_pics,'/ResultsQuantileSimulation_StdSNR_SNR',num2str(c), '_Nsubj',num2str(n), '_Quant',num2str(100*lvls(a)),'.png'] )
 
         figure('pos',[10 10 WidthFig HeightFig]), clf, hold on
         set(gca, 'fontsize', sfont);
@@ -283,15 +313,15 @@ for n = Nsubj
         set(h, 'Interpreter', 'latex');
         set(h, 'fontsize', sfont+addf);
 
-        saveas( gcf, [path_pics,'/ResultsQuantileSimulation_VarCohen_SNR',num2str(c), '_Nsubj',num2str(n), '_Quant',num2str(100*lvls(a)),'.png'] )
+        saveas( gcf, [path_pics,'/ResultsQuantileSimulation_StdCohen_SNR',num2str(c), '_Nsubj',num2str(n), '_Quant',num2str(100*lvls(a)),'.png'] )
 
         figure('pos',[10 10 WidthFig HeightFig]), clf, hold on
         set(gca, 'fontsize', sfont);
         plot([10 20 30], squeeze(trueQuantTrue(a,countc, :, countn)), '-k', 'LineWidth', 2 )
         plot([10 20 30], squeeze(QuantTrueMGauss(a,countc, :, countn)), '-', 'LineWidth', 1.5,'Color',colMat(1,:) )
-%        plot([10 20 30], squeeze(QuantCohenMtGauss(a,countc, :, countn)), '-', 'LineWidth', 1.5,'Color',colMat(2,:) )
+        plot([10 20 30], squeeze(QuantTrueMtGauss(a,countc, :, countn)), '-', 'LineWidth', 1.5,'Color',colMat(2,:) )
         plot([10 20 30], squeeze(QuantTrueMRadem(a,countc, :, countn)), '-', 'LineWidth', 1.5,'Color',colMat(3,:) )
-%        plot([10 20 30], squeeze(QuantCohenMtRadem(a,countc, :, countn)), '-', 'LineWidth', 1.5,'Color',colMat(4,:) )
+        plot([10 20 30], squeeze(QuantTrueMtRadem(a,countc, :, countn)), '-', 'LineWidth', 1.5,'Color',colMat(4,:) )
         
 
         % Modify gloabal font size for this plot
@@ -315,7 +345,75 @@ for n = Nsubj
         set(h, 'Interpreter', 'latex');
         set(h, 'fontsize', sfont+addf);
 
-        saveas( gcf, [path_pics,'/ResultsQuantileSimulation_VarTrueAsympt_SNR',num2str(c), '_Nsubj',num2str(n), '_Quant',num2str(100*lvls(a)),'.png'] )
+        saveas( gcf, [path_pics,'/ResultsQuantileSimulation_StdTrue_SNR',num2str(c), '_Nsubj',num2str(n), '_Quant',num2str(100*lvls(a)),'.png'] )
+
+        figure('pos',[10 10 WidthFig HeightFig]), clf, hold on
+        set(gca, 'fontsize', sfont);
+        plot([10 20 30], squeeze(trueQuantAsym(a,countc, :, countn)), '-k', 'LineWidth', 2 )
+        plot([10 20 30], squeeze(QuantAsymMGauss(a,countc, :, countn)), '-', 'LineWidth', 1.5,'Color',colMat(1,:) )
+        plot([10 20 30], squeeze(QuantAsymMtGauss(a,countc, :, countn)), '-', 'LineWidth', 1.5,'Color',colMat(2,:) )
+        plot([10 20 30], squeeze(QuantAsymMRadem(a,countc, :, countn)), '-', 'LineWidth', 1.5,'Color',colMat(3,:) )
+        plot([10 20 30], squeeze(QuantAsymMtRadem(a,countc, :, countn)), '-', 'LineWidth', 1.5,'Color',colMat(4,:) )
+        
+
+        % Modify gloabal font size for this plot
+        set(gca,'FontSize', sfont)
+
+        % Change axis style
+        xlim([xvec(1)-5 xvec(end)+5])
+        xticks(xvec)
+        xticklabels(xtickcell)
+
+        h = xlabel('Size of image [LxL]', 'fontsize', sfont+addf); set(h, 'Interpreter', 'latex');
+        h = ylabel('quantile value', 'fontsize', sfont+addf); set(h, 'Interpreter', 'latex');
+        
+        % add legend
+        legend( 'True Quantile', 'gMult', 'gMult-t', 'rMult', 'rMult-t',...
+                                'Location', 'southeast' );
+        set(legend, 'fontsize', sfont);
+        legend boxoff
+        
+        h=title(strcat('SNR=',num2str(c), ' Nsubj=',num2str(n), ' Quant= ',num2str(lvls(a)) ));
+        set(h, 'Interpreter', 'latex');
+        set(h, 'fontsize', sfont+addf);
+
+        saveas( gcf, [path_pics,'/ResultsQuantileSimulation_StdAsym_SNR',num2str(c), '_Nsubj',num2str(n), '_Quant',num2str(100*lvls(a)),'.png'] )
+        
+        %%% Plot results for quantile estimation using the 
+        figure('pos',[10 10 WidthFig HeightFig]), clf, hold on
+        set(gca, 'fontsize', sfont);
+        plot([10 20 30], squeeze(trueQuantStab(a,countc, :, countn)), '-k', 'LineWidth', 2 )
+        plot([10 20 30], squeeze(QuantStabMGauss(a,countc, :, countn)), '-', 'LineWidth', 1.5,'Color',colMat(1,:) )
+        plot([10 20 30], squeeze(QuantStabMtGauss(a,countc, :, countn)), '-', 'LineWidth', 1.5,'Color',colMat(2,:) )
+        plot([10 20 30], squeeze(QuantStabMRadem(a,countc, :, countn)), '-', 'LineWidth', 1.5,'Color',colMat(3,:) )
+        plot([10 20 30], squeeze(QuantStabMtRadem(a,countc, :, countn)), '-', 'LineWidth', 1.5,'Color',colMat(4,:) )
+        plot([10 20 30], squeeze(trueQuantStab(a,countc, :, countn)), '--k', 'LineWidth', 2 )
+        
+
+        % Modify gloabal font size for this plot
+        set(gca,'FontSize', sfont)
+
+        % Change axis style
+        xlim([xvec(1)-5 xvec(end)+5])
+        xticks(xvec)
+        xticklabels(xtickcell)
+
+        h = xlabel('Size of image [LxL]', 'fontsize', sfont+addf); set(h, 'Interpreter', 'latex');
+        h = ylabel('quantile value', 'fontsize', sfont+addf); set(h, 'Interpreter', 'latex');
+        
+        % add legend
+        legend( 'True Quantile', 'gMult', 'gMult-t', 'rMult', 'rMult-t',...
+                                'Location', 'southeast' );
+        set(legend, 'fontsize', sfont);
+        legend boxoff
+        
+        h=title(strcat('SNR=',num2str(c), ' Nsubj=',num2str(n), ' Quant= ',num2str(lvls(a)) ));
+        set(h, 'Interpreter', 'latex');
+        set(h, 'fontsize', sfont+addf);
+
+        saveas( gcf, [path_pics,'/ResultsQuantileSimulation_StdStab_SNR',num2str(c), '_Nsubj',num2str(n), '_Quant',num2str(100*lvls(a)),'.png'] )
+
+        
         close all
     end
 end
