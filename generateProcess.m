@@ -100,6 +100,45 @@ if D==2
             [x,y] = ndgrid( 1:dim(1), 1:dim(2) );
             Rmap  = sqrt((x-cent0(1)).^2 + (y-cent0(2)).^2);
             mu    = mySmooth(Rmap<=rad,smo)*mag;
+        case 'dcircle'
+            [x,y] = ndgrid( 1:dim(1), 1:dim(2) );
+            
+            cent0  = dim/4 + 1/2;
+            %Comm  = sprintf('Circle r=%02d sm=%1d',rad,smo);
+            Rmap1  = sqrt((x-cent0(1)).^2 + (y-cent0(2)).^2);         
+            cent0  = 3*dim/4 + 1/2;
+            Rmap2  = sqrt((x-cent0(1)).^2 + (y-cent0(2)).^2);
+            mu     = mySmooth(Rmap1<=param(1),param(3))*param(2)...
+                     + mySmooth(Rmap2<=param(4),param(6))*param(5);
+         case 'tcircle'
+            [x,y] = ndgrid( 1:dim(1), 1:dim(2) );
+            
+            cent0  = dim/4 + 1/2;
+            %Comm  = sprintf('Circle r=%02d sm=%1d',rad,smo);
+            Rmap1  = sqrt((x-cent0(1)).^2 + (y-cent0(2)).^2);         
+            cent0  = 2*dim/3 + 1/2;
+            Rmap2  = sqrt((x-cent0(1)).^2 + (y-cent0(2)).^2);
+            cent0  = (dim.*[1/4,3/4] + 1/2);
+            Rmap3  = sqrt((x-cent0(1)).^2 + (y-cent0(2)).^2);
+            mu     = mySmooth(Rmap1<=param(1),param(3))*param(2)...
+                     + mySmooth(Rmap2<=param(4),param(6))*param(5)...
+                     + mySmooth(Rmap3<=param(7),param(9))*param(8);  
+         case '4circle'
+            [x,y] = ndgrid( 1:dim(1), 1:dim(2) );
+            
+            mu = param(1,1)*exp( -(x-param(1,2)).^2 ./ param(1,4)^2 ...
+                        - (y-param(1,3)).^2 ./ param(1,5)^2)...
+                 + param(2,1)*exp( -(x-param(2,2)).^2 ./ param(2,4)^2 ...
+                        - (y-param(2,3)).^2 ./ param(2,5)^2)....
+                 + param(3,1)*exp( -(x-param(3,2)).^2 ./ param(3,4)^2 ...
+                        - (y-param(3,3)).^2 ./ param(3,5)^2)...
+                 + param(4,1)*exp( -(x-param(4,2)).^2 ./ param(4,4)^2 ...
+                        - (y-param(4,3)).^2 ./ param(4,5)^2);
+        case 'none'
+            mu = zeros(dim);
+        case 'predefined'
+            mu = param;
+            
     end    
 else
     [xx, yy, zz] =ndgrid( (0.5:dim(1))/dim(1), (0.5:dim(2))/dim(2),...

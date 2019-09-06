@@ -15,11 +15,12 @@ function [thresh, quantiles, hatdelta, hatsigma, len_bdry] = CopeSets( F, c, lvl
 %                   Mboot:     amount of bootstrap replicates (default=5e3)
 %                   method:    option for the bootstrap estimator (default='t')
 %               }
-%  bdry_type: currently 'linear' or 'true' are supported
+%  bdry_type: currently 'linear', 'eroddilate' or 'true' are supported.
+%             Moreover, we have the 'interval'
 %  center:    option to center the field using the sample mean (default=1)
 %  normalize: option to normalize the field by sample variance (default=1)
 %  delta:     required, if bdry_type is equal to 'true'. This is the true
-%            population mean function given on a D-dimensional array
+%             population mean function given on a D-dimensional array
 % Output:
 %  - thresh is the threshold lower and upper for the sample mean in order to
 %    be in the estimated lower and upper excursion sets 

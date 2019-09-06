@@ -1,11 +1,12 @@
 function [thresh, quantiles, SNR, asymptSD] = CopeSets_SNR( F, c, lvls, quantEstim,...
-                                                        bdry_type, delta )
+                                                        bdry_type, delta, mask )
 % Computes all ingredients for CoPe sets of the signal-plus-noise-ratio.
 % Input:
 %  F:    random field over a domain in R^D, it is an (D+1)-dimensional array,
 %        where the last dimension enumerates the samples
 %  c:    threshold for excursions
-%  lvls:       vector for which the quantile needs to be estimated%  quantEstim: structure containing the name and the parameters for the
+%  lvls:       vector for which the quantile needs to be estimated
+%  quantEstim: structure containing the name and the parameters for the
 %              quantile estimation method. Choices:
 %               {
 %                quantEstim.name = 'multiplierbootstrap'
@@ -13,9 +14,16 @@ function [thresh, quantiles, SNR, asymptSD] = CopeSets_SNR( F, c, lvls, quantEst
 %                   Mboot:     amount of bootstrap replicates (default=5e3)
 %                   method:    option for the bootstrap estimator (default='t')
 %               }
-%   bdry_type: currently 'linear' or 'true' are supported
-
-% delta:     required, if bdry_type is equal to 'true'. This is the
+%   bdry_type: estimator for the domain which is used to estimate the
+%              quantile
+%              'full'        = whole mask (i.e., simultaneous conf. bands!)
+%              'erodilation' = erodes and dilates the excursion set by 1
+%                              voxel in 3^D connectivity and uses dilated \
+%                              eroded as estimator for the bdry
+%              'linear'      = linear interpolates voxels in dilated\eroded
+%                              to find better estimate of bdry
+%              'true'        = uses true bdry (only possible in simulations)
+%   delta:     required, if bdry_type is equal to 'true'. This is the
 % Output:
 %  thresh is the threshold lower and upper for the SNR in order to
 %  be in the estimated lower and upper excursion sets 
@@ -34,7 +42,10 @@ function [thresh, quantiles, SNR, asymptSD] = CopeSets_SNR( F, c, lvls, quantEst
 % Fill in unset optional values.
 switch nargin
     case 5
-        delta     = 666;
+        delta = 666;
+        mask  = ones(dim(F));
+    case 6
+        delta = 666;
 end
 
 %%%% Compute the SNR residuals and the SNR
@@ -42,6 +53,9 @@ end
 
 %%%% Compute the process on the boundary and its mask
 switch(bdry_type)
+    case 'full'
+        F_bdry = F(mask);
+        mask   = ones([size(F_bdry,1) 1] );
     case 'linear'
         F_bdry = linBdryEstim( F, c, 1, SNR );
         mask   = ones([size(F_bdry,1) 1] );
@@ -56,7 +70,9 @@ end
 %%%% Estimate the quantiles of the Gaussian process on the boundary
 if strcmp( quantEstim.name, 'MultiplierBootstrap' )
     quantiles = MultiplierBoots( F_bdry, lvls, ...
-                    quantEstim.params.Mboot, mask, quantEstim.params.weights, quantEstim.params.method );
+                                 quantEstim.params.Mboot, mask, ...
+                                 quantEstim.params.weights, ...
+                                 quantEstim.params.method );
 else
     error("Please specify a valid method for quantile estimation")
 end

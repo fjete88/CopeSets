@@ -95,7 +95,7 @@ end
 bootMax = max(abs( sqrt(N)*bootMeans./bootSigma ));
 
 %%%%%% compute quantiles from the bootstrapp distribution of maximum
-quantiles     = quantile( bootMax, alpha/2 );
+quantiles = quantile( bootMax, alpha/2 );
 
 % bootMax          = max(sqrt(N)*bootMeans./bootSigma);
 % quantilesAsym    = [-666 -666];
