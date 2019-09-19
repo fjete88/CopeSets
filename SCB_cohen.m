@@ -65,6 +65,9 @@ D = length(sF)-1;
 
 %%%% Estimate the quantiles of the Gaussian process on the boundary
 if strcmp( quantEstim.name, 'MultiplierBootstrap' )
+    % standardize the residuals to have stdev 1
+    residuals = residuals ./ std(residuals,0, D+1);
+    
     % estimate using the multiplier bootstrap
     quantiles = MultiplierBoots( residuals, 2*lvls, ...
                     quantEstim.params.Mboot,...
