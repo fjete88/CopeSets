@@ -104,4 +104,6 @@ clear params sdField dim quantEstim1
 %% %%%% simulate the covering rate and quantiles
 [covRates, quantiles] = Sim_SNRSCB( Msim, Nvec, lvls, quantEstim, ...
                                              paramsSignal, paramsNoise );
-save('Sim_SNRSCB_isotropicGauss.mat')
+cd ..
+mkdir results
+save('results/Sim_SNRSCB_isotropicGauss.mat')
