@@ -18,15 +18,17 @@ if strcmp(unit, 'personal')
     addpath('../../HermiteProjector')
     addpath('/home/drtea/Documents/MATLAB/spm12')
 elseif strcmp(unit, 'wias-server')
-    
+    addpath('~/projects/CopeSets')
+    addpath('~/projects/HermiteProjector')
+    addpath('~/projects/spm12')
 end
 
 clear unit
 
 %%%%%% Define parameters of the simulation
 % Simulation parameters
-Msim  = 1e3;
-Mboot = 5e3; 
+Msim  = 1%1e3;
+Mboot = 5%e3; 
 Nvec  = [30, 60, 120, 240, 400];
 lvls  = [0.85 0.9, 0.95];
 
