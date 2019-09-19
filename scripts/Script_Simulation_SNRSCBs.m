@@ -18,9 +18,9 @@ if strcmp(unit, 'personal')
     addpath('../../HermiteProjector')
     addpath('/home/drtea/Documents/MATLAB/spm12')
 elseif strcmp(unit, 'wias-server')
-    addpath('~/projects/CopeSets')
-    addpath('~/projects/HermiteProjector')
-    addpath('~/projects/spm12')
+    addpath('/Home/guests/ftelschowprojects/CopeSets')
+    addpath('/Home/guests/ftelschowprojects/HermiteProjector')
+    addpath('/Home/guests/ftelschow/projects/spm12')
 end
 
 clear unit
