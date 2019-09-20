@@ -14,8 +14,8 @@ unit = 'wias-server';
 
 % add path to Hermite projecton estimator and Cope Set repository
 if strcmp(unit, 'personal')
-    addpath('../../CopeSets')
-    addpath('../../HermiteProjector')
+    addpath('/home/drtea/Research/Projects/CopeSets')
+    addpath('/home/drtea/Research/Projects/HermiteProjector')
     addpath('/home/drtea/Documents/MATLAB/spm12')
 elseif strcmp(unit, 'wias-server')
     addpath('/Home/guests/ftelschow/projects/CopeSets')
@@ -27,8 +27,8 @@ clear unit
 
 %%%%%% Define parameters of the simulation
 % Simulation parameters
-Msim  = 1%1e3;
-Mboot = 5%e3; 
+Msim  = 200;
+Mboot = 3e3; 
 Nvec  = [30, 60, 120, 240, 400];
 lvls  = [0.85 0.9, 0.95];
 
@@ -102,8 +102,12 @@ quantEstim{5} = quantEstim1;
 clear params sdField dim quantEstim1
 
 %% %%%% simulate the covering rate and quantiles
+seed = abs(randn(1));
+rng(seed);
+tic
 [covRates, quantiles] = Sim_SNRSCB( Msim, Nvec, lvls, quantEstim, ...
                                              paramsSignal, paramsNoise );
+sim_time = toc;
 cd ..
 mkdir results
 save('results/Sim_SNRSCB_isotropicGauss.mat')
