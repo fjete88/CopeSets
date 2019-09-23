@@ -27,9 +27,9 @@ clear unit
 
 %%%%%% Define parameters of the simulation
 % Simulation parameters
-Msim  = 1;
+Msim  = 100;
 Mboot = 3e3; 
-Nvec  = [240 400];%[30, 60, 120, 240, 400];
+Nvec  = [30, 60, 120, 240, 400];
 lvls  = [0.85 0.9, 0.95];
 
 % parameters: error process
